@@ -12,25 +12,14 @@ export class MemberResolver {
     @Mutation(() => Member)
    // @UsePipes(ValidationPipe) => api darajasida
     public async signup(@Args('input') input: MemberInput): Promise<Member> {
-        try {
             console.log('Mutation: signup');
-            console.log('input:', input);
             return this.memberService.signup(input);
-        } catch (err) {
-            console.log('Error, signup:', err);
-            throw new InternalServerErrorException(err);
-        }
     }
 
      @Mutation(() => Member)
     public async login(@Args('input') input: LoginInput): Promise<Member> {
-        try {
             console.log('Mutation: login');
-            return this.memberService.login(input);
-        } catch (err) {
-            console.log('Error, signup:', err);
-            throw new InternalServerErrorException(err);
-        }
+            return this.memberService.login(input);         
     }
     
      @Mutation(() => String)
