@@ -7,6 +7,7 @@ import { MemberStatus } from '../../libs/enums/member.enum';
 import { Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
 import { MemberUpdate } from '../../libs/dto/member/member.update';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class MemberService {
@@ -58,17 +59,24 @@ export class MemberService {
     },
     input,
     { new: true },
-  )
-  .exec();
+  )  .exec();
   if(!result) throw new InternalServerErrorException(Message.UPLOAD_FAILED);
 
   result.accessToken = await this.authService.createToken(result);
   return result;
  }
 
- public async getMember(): Promise<string> {
-  return 'getMember executed';
- }
+ public async getMember(targetId: string): Promise<Member> {
+    const search = {
+        _id: new Types.ObjectId(targetId), // string -> ObjectId
+        memberStatus: { $in: [MemberStatus.ACTIVE, MemberStatus.BLOCK] },
+    };
+
+    const targetMember = await this.memberModel.findOne(search).exec();
+    if (!targetMember) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    return targetMember;
+}
 
  public async getAllMembersByAdmin(): Promise<string> {
   return 'getAllMembersByAdmin executed';
