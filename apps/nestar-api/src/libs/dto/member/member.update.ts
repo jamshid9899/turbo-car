@@ -8,7 +8,7 @@ import { MemberStatus, MemberType } from "../../enums/member.enum";
 export class MemberUpdate {
     @IsNotEmpty()
     @Field(() => String)
-   _id: Types.ObjectId; // bu real ObjectId
+   _id: Types.ObjectId; 
 
     @IsOptional()
     @Field(() => MemberType, { nullable: true})
