@@ -11,7 +11,7 @@ import { ViewModule } from '../view/view.module';
     AuthModule,
     ViewModule],
   providers: [MemberResolver, MemberService],
-  exports: [],
+  exports: [MemberService],
 })
 export class MemberModule {}
 
