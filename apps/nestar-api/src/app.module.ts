@@ -17,7 +17,7 @@ import { T } from './libs/types/common';
     GraphQLModule.forRoot({  // for integration graphql api
     driver: ApolloDriver,
     playground: true,
-    uploads: false,
+    uploads: true,
     autoSchemaFile: true,
     formatError: (error: T) => {
       const graphQLFormattedError = {
