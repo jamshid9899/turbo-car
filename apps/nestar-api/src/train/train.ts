@@ -15,20 +15,39 @@
 
 
 //TASK ZO
-function areParenthesesBalanced(str: string): boolean {
-   let count = 0;
+// function areParenthesesBalanced(str: string): boolean {
+//    let count = 0;
 
-   for (const char of str) {
-      if (char === "(") {
-         count++;
-      } else if (char === ")") {
-         count--;
-         if (count < 0) {
-            return false;
-         }
-      }
-   }
-   return count === 0;
+//    for (const char of str) {
+//       if (char === "(") {
+//          count++;
+//       } else if (char === ")") {
+//          count--;
+//          if (count < 0) {
+//             return false;
+//          }
+//       }
+//    }
+//    return count === 0;
+// }
+
+// console.log(areParenthesesBalanced("string()ichida(qavslar)soni()balansda"));
+
+//Task ZP
+function countNumberAndLetters(str: string): { number: number; letter: number } {
+  let numbers = 0;
+  let letters = 0;
+
+  for (let ch of str) {
+    if (/[0-9]/.test(ch)) {
+      numbers++;
+    } else if (/[a-zA-Z]/.test(ch)) {
+      letters++;
+    }
+  }
+
+  return { number: numbers, letter: letters };
 }
 
-console.log(areParenthesesBalanced("string()ichida(qavslar)soni()balansda"));
+// Test
+console.log(countNumberAndLetters("string152%¥"));
