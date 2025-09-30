@@ -1,3 +1,23 @@
+//TASK ZQ
+function findDuplicatesAtLeastTwo(arr: number[]): number[] {
+  const counts: Record<number, number> = {};
+  const result: number[] = [];
+
+  for (const num of arr) {
+    counts[num] = (counts[num] || 0) + 1;
+  }
+
+  for (const key in counts) {
+    if (counts[key] >= 2) {
+      result.push(Number(key));
+    }
+  }
+
+  return result;
+}
+
+console.log(findDuplicatesAtLeastTwo([1, 2, 3, 4, 5, 4, 3, 4])); 
+
 //console.log('NestJS test file ishladi!');
 //Task ZL
 // function stringKebab(str) {
@@ -34,20 +54,20 @@
 // console.log(areParenthesesBalanced("string()ichida(qavslar)soni()balansda"));
 
 //Task ZP
-function countNumberAndLetters(str: string): { number: number; letter: number } {
-  let numbers = 0;
-  let letters = 0;
+// function countNumberAndLetters(str: string): { number: number; letter: number } {
+//   let numbers = 0;
+//   let letters = 0;
 
-  for (let ch of str) {
-    if (/[0-9]/.test(ch)) {
-      numbers++;
-    } else if (/[a-zA-Z]/.test(ch)) {
-      letters++;
-    }
-  }
+//   for (let ch of str) {
+//     if (/[0-9]/.test(ch)) {
+//       numbers++;
+//     } else if (/[a-zA-Z]/.test(ch)) {
+//       letters++;
+//     }
+//   }
 
-  return { number: numbers, letter: letters };
-}
+//   return { number: numbers, letter: letters };
+// }
 
-// Test
-console.log(countNumberAndLetters("string152%¥"));
+// // Test
+// console.log(countNumberAndLetters("string152%¥"));
