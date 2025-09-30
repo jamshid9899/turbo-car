@@ -85,5 +85,15 @@ export class PropertyResolver {
       return await this.propertyService.getAllPropertiesByAdmin(input)
      }
 
+     @Roles(MemberType.ADMIN)
+     @UseGuards(RolesGuard)
+     @Mutation((returns) => Property)
+     public async updatePropertyByAdmin(
+      @Args('input') input: PropertyUpdate,
+      @AuthMember('_id') memberId: ObjectId,
+     ): Promise<Property> {
+      console.log('Query: updateAllPropertyByAdmin');
+      return await this.propertyService.updatePropertyByAdmin(input)
+     }
 
 }
