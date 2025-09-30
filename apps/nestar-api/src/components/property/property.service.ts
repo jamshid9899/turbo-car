@@ -149,7 +149,7 @@ export class PropertyService {
       if (periodsRange) match.createdAt = { $gte: periodsRange.start, $lte: periodsRange.end };
       if (squaresRange) match.propertySquare = { $gte: squaresRange.start, $lte: squaresRange.end };
 
-      if (text) match.propertyTitle = { $regex: new RegExp(text, '1') };
+      if (text) match.propertyTitle = { $regex: new RegExp(text, 'i') };
       if (options) {
         match ['$or'] = options.map((ele) => {
           return {[ele]: true};
@@ -204,7 +204,7 @@ export class PropertyService {
               { $skip: (input.page -1) * input.limit },
               { $limit: input.limit },
               lookupMember,
-              { $unwind: '$memberData'},
+              { $unwind: '$memberData'}, //[memberdata] => memberData
             ],
             metaCounter: [{ $count: 'total' }],
           }
