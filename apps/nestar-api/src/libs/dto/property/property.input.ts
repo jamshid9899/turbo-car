@@ -107,7 +107,7 @@ export class PropertyInput {
   locationList?: PropertyLocation[];
 
   @IsOptional()
-  @Field(() => [Int], { nullable: true })
+  @Field(() => [PropertyType], { nullable: true })
   typeList?: PropertyType[];
 
   @IsOptional()
@@ -155,11 +155,11 @@ export class PropertyInput {
  @IsOptional()
  @IsIn(availablePropertySorts)
  @Field(() => String, { nullable: true})
- sort: string;
+ sort?: string;
 
  @IsOptional()
  @Field(() => Direction, { nullable: true })
- direaction?: Direction;
+ direction?: Direction;
 
  @IsNotEmpty()
  @Field(() => PISearch)
@@ -188,11 +188,11 @@ export class PropertyInput {
  @IsOptional()
  @IsIn(availablePropertySorts)
  @Field(() => String, { nullable: true})
- sort: string;
+ sort?: string;
 
  @IsOptional()
  @Field(() => Direction, { nullable: true })
- direaction?: Direction;
+ direction?: Direction;
 
  @IsNotEmpty()
  @Field(() => APISearch)

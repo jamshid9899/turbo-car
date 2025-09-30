@@ -27,14 +27,16 @@ export class PropertyResolver {
         input.memberId = memberId;
         return await this.propertyService.createProperty(input);
      }
+
      @UseGuards(WithoutGuard)
      @Query((returns) => Property)
       public async getProperty(
       @Args('propertyId') input: string,
       @AuthMember('_id') memberId: ObjectId,
      ): Promise<Property> {
-      console.log('Query: getProperty');
+      console.log('Query: getProperty', { input, memberId });
       const propertyId = shapeIntoMongoObjectId(input);
+      console.log('Mongo ObjectId:', propertyId);
       return await this.propertyService.getProperty(memberId, propertyId)
      }
 
