@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Schema } from 'mongoose';
 import { MemberService } from '../member/member.service';
 import { AgentPropertiesInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
@@ -16,6 +16,9 @@ import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 
 @Injectable()
 export class PropertyService {
+    memberStatsEditor(arg0: { _id: Schema.Types.ObjectId; targetKey: string; modifier: number; }) {
+        throw new Error('Method not implemented.');
+    }
     constructor(@InjectModel('Property') private readonly propertyModel: Model<Property>,
    private memberService: MemberService,
   private viewService: ViewService) {}
