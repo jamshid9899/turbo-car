@@ -10,4 +10,4 @@ import { Module } from '@nestjs/common';
   providers: [ LikeService],
   exports: [ LikeService],
 })
-export class CommentModule {}
+export class LikeModule {}
