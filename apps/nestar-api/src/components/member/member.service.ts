@@ -137,6 +137,7 @@ export class MemberService {
   return result[0];
  }
 
+ /**LIKES */
  public async likeTargetMember(memberId: ObjectId, likeRefId: ObjectId): Promise<Member> {
   const target: Member = await this.memberModel.findOne({_id: likeRefId, memberStatus: MemberStatus.ACTIVE}).exec();
   if(!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
@@ -147,7 +148,6 @@ export class MemberService {
     likeGroup: LikeGroup.MEMBER,
   };
 
-  //LIKE TOGGLE via Like modules
   const modifier: number = await this.likeService.toggleLike(input);
   const result = await this.memberStatsEditor({_id: likeRefId, targetKey: 'memberLikes', modifier: modifier });
   if(!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
