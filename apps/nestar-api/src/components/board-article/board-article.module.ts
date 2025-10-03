@@ -6,13 +6,16 @@ import { MemberModule } from '../member/member.module';
 import { ViewModule } from '../view/view.module';
 import { AuthModule } from '../auth/auth.module';
 import BoardArticleSchema from '../../schemas/BoardArticle.model';
+import { LikeModule } from '../like/like.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'BoardArticle', schema: BoardArticleSchema ,}]), 
     AuthModule,
     ViewModule,
-    MemberModule],
+    MemberModule,
+    LikeModule,
+  ],
   providers: [BoardArticleResolver, BoardArticleService],
   exports: [BoardArticleService],
 })
