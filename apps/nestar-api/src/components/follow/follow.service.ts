@@ -5,7 +5,7 @@ import { Model, ObjectId } from 'mongoose';
 import { Follower, Followers, Following, Followings } from '../../libs/dto/follow/follow';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { FollowInquiry } from '../../libs/dto/follow/follow.input';
-import { lookupFollowerData, lookupFollowingData } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupFollowerData, lookupFollowingData } from '../../libs/config';
 import { T } from '../../libs/types/common';
 
 @Injectable()
@@ -72,6 +72,7 @@ export class FollowService {
                         //run multiple pipelines in parallel
                         list: [{ $skip: (page - 1) * limit }, { $limit: limit }, //bir biridan mustasno ishlayapti
                             //meLiked
+                            lookupAuthMemberLiked(memberId, "$followingId"),
                             //meFollowed
                             lookupFollowingData,
                         { $unwind: '$followingData' }],
@@ -102,6 +103,7 @@ export class FollowService {
                             [{ $skip: (page - 1) * limit },
                             { $limit: limit }, //bir biridan mustasno ishlayapti
                                 //meLiked
+                            lookupAuthMemberLiked(memberId, "$followerId"),
                                 //meFollowed
                                 lookupFollowerData,
                             { $unwind: '$followerData' }],
