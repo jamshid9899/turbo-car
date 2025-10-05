@@ -19,7 +19,7 @@ export class CommentService {
         private readonly memberService: MemberService,
         private readonly propertyService: PropertyService,
         private readonly boardArticleService: BoardArticleService,
-    ) {}
+    ) { }
 
     public async createComment(memberId: ObjectId, input: CommentInput): Promise<Comment> {
         input.memberId = memberId;
@@ -45,14 +45,14 @@ export class CommentService {
                     targetKey: 'articleComments',
                     modifier: 1,
                 });
-                break;  
+                break;
             case CommentGroup.MEMBER:
                 await this.memberService.memberStatsEditor({
                     _id: input.commentRefId,
                     targetKey: 'memberComments',
                     modifier: 1,
                 });
-                break;          
+                break;
         }
         if (!result) throw new InternalServerErrorException(Message.CREATE_FAILED);
         return result;
@@ -60,9 +60,9 @@ export class CommentService {
 
     public async updateComment(memberId: ObjectId, input: CommentUpdate): Promise<Comment> {
         const { _id } = input;
-        
+
         const result = await this.commentModel.findOneAndUpdate(
-            { _id: _id, memberId: memberId, commentStatus: CommentStatus.ACTIVE }, 
+            { _id: _id, memberId: memberId, commentStatus: CommentStatus.ACTIVE },
             input,
             { new: true },
         ).exec();
@@ -82,7 +82,7 @@ export class CommentService {
             { $sort: sort },
             {
                 $facet: {
-                    list: [ 
+                    list: [
                         { $skip: (input.page - 1) * input.limit },
                         { $limit: input.limit },
                         lookupMember,

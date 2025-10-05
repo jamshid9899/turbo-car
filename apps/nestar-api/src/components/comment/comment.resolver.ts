@@ -8,7 +8,7 @@ import { UseGuards } from '@nestjs/common';
 import { CommentUpdate } from '../../libs/dto/comment/comment.update';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import { WithoutGuard } from '../auth/guards/without.guard';
-import { Comment, Comments } from '../../libs/dto/comment/comment'; 
+import { Comment, Comments } from '../../libs/dto/comment/comment';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { MemberType } from '../../libs/enums/member.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -16,10 +16,10 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver(() => Comment)
 export class CommentResolver {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(private readonly commentService: CommentService) { }
 
   @UseGuards(AuthGuard)
-  @Mutation((returns) => Comment)  
+  @Mutation((returns) => Comment)
   public async createComment(
     @Args('input') input: CommentInput,
     @AuthMember('_id') memberId: ObjectId,

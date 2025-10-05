@@ -10,7 +10,7 @@ import { LikeModule } from '../like/like.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: "Property", schema: PropertySchema }]), 
+    MongooseModule.forFeature([{ name: "Property", schema: PropertySchema }]),
     AuthModule,
     ViewModule,
     MemberModule,
@@ -19,4 +19,4 @@ import { LikeModule } from '../like/like.module';
   providers: [PropertyResolver, PropertyService],
   exports: [PropertyService]
 })
-export class PropertyModule {}
+export class PropertyModule { }

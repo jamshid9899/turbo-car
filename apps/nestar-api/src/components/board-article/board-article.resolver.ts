@@ -15,7 +15,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver()
 export class BoardArticleResolver {
-  constructor(private readonly boardArticleService: BoardArticleService) {}
+  constructor(private readonly boardArticleService: BoardArticleService) { }
 
   @UseGuards(AuthGuard)
   @Mutation(() => BoardArticle)
@@ -61,15 +61,15 @@ export class BoardArticleResolver {
 
   /**LIKES */
   @UseGuards(AuthGuard)
-   @Mutation(() => BoardArticle)
-   public async likeTargetBoardArticle(
+  @Mutation(() => BoardArticle)
+  public async likeTargetBoardArticle(
     @Args('articleId') input: string,
     @AuthMember('_id') memberId: ObjectId,
-   ): Promise<BoardArticle> {
+  ): Promise<BoardArticle> {
     console.log('Mutation: likeTargetBoardArticle');
     const likeRefId = shapeIntoMongoObjectId(input);
     return await this.boardArticleService.likeTargetBoardArticle(memberId, likeRefId);
-   }
+  }
 
   /** ADMIN */
   @Roles(MemberType.ADMIN)
@@ -83,27 +83,27 @@ export class BoardArticleResolver {
     return await this.boardArticleService.getAllBoardArticlesByAdmin(input);
   }
 
-     @Roles(MemberType.ADMIN)
-      @UseGuards(RolesGuard)
-      @Mutation((returns) => BoardArticle)
-      public async updateBoardArticleByAdmin(
-       @Args('input') input: BoardArticleUpdate,
-       @AuthMember('_id') memberId: ObjectId,
-      ): Promise<BoardArticle> {
-       console.log('Query: updateAllPropertyByAdmin');
-       input._id = shapeIntoMongoObjectId(input._id);
-       return await this.boardArticleService.updateBoardArticleByAdmin(input)
-      }
- 
-      @Roles(MemberType.ADMIN)
-      @UseGuards(RolesGuard)
-      @Mutation((returns) => BoardArticle)
-      public async removeBoardArticleByAdmin(
-       @Args('articleId') input: string,
-      ): Promise<BoardArticle> {
-       console.log('Query: removeBoardArticleByAdmin');
-       const articleId = shapeIntoMongoObjectId(input);
-       return await this.boardArticleService.removeBoardArticleByAdmin(articleId)
-      }
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Mutation((returns) => BoardArticle)
+  public async updateBoardArticleByAdmin(
+    @Args('input') input: BoardArticleUpdate,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<BoardArticle> {
+    console.log('Query: updateAllPropertyByAdmin');
+    input._id = shapeIntoMongoObjectId(input._id);
+    return await this.boardArticleService.updateBoardArticleByAdmin(input)
+  }
+
+  @Roles(MemberType.ADMIN)
+  @UseGuards(RolesGuard)
+  @Mutation((returns) => BoardArticle)
+  public async removeBoardArticleByAdmin(
+    @Args('articleId') input: string,
+  ): Promise<BoardArticle> {
+    console.log('Query: removeBoardArticleByAdmin');
+    const articleId = shapeIntoMongoObjectId(input);
+    return await this.boardArticleService.removeBoardArticleByAdmin(articleId)
+  }
 }
 

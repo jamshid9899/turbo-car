@@ -4,7 +4,7 @@ import ViewSchema from '../../schemas/View.model';
 import { ViewService } from './view.service';
 
 @Module({
-    imports: [MongooseModule.forFeature([{ name: 'View', schema: ViewSchema}])],
+    imports: [MongooseModule.forFeature([{ name: 'View', schema: ViewSchema }])],
     providers: [ViewService],
     exports: [ViewService],
 })
