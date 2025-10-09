@@ -9,6 +9,8 @@ import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
 import { error } from 'console';
 import { T } from './libs/types/common';
+import { SocketModule } from './socket/socket.module';
+
 
 
 @Module({
@@ -30,7 +32,7 @@ import { T } from './libs/types/common';
     }
   }),
    ComponentsModule,  // basic backend logic and clean code
-   DatabaseModule // mongdb connection
+   DatabaseModule, SocketModule // mongdb connection
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],
