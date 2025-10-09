@@ -12,26 +12,38 @@ export class BatchController {
   handleTimeout() {
     this.logger.debug('BATCH SERVER READY!');
   }
-  
-@Cron('0 * * * * *', { name: BATCH_ROLLBACK })  // har daqiqaning boshida
+
+@Cron('00 00 01 * * *', { name: BATCH_ROLLBACK })  // har daqiqaning boshida
 public async batchRollback() {
+  try {
   this.logger['context'] = BATCH_ROLLBACK;
   this.logger.debug('EXECUTED!');
   await this.batchService.batchRollback();
+  } catch (err) {
+    this.logger.error(err);
+  }
 }
 
-@Cron('20 * * * * *', { name: BATCH_TOP_PROPERTIES }) // har daqiqaning 20-soniyasida
-public async batchProperties() {
+@Cron('20 00 01 * * *', { name: BATCH_TOP_PROPERTIES }) // har daqiqaning 20-soniyasida
+public async batchTopProperties() {
+  try {
   this.logger['context'] = BATCH_TOP_PROPERTIES;
   this.logger.debug('EXECUTED!');
-  await this.batchService.batchProperties();
+  await this.batchService.batchTopProperties();
+  } catch (err) {
+    this.logger.error(err);
+  }
 }
 
-@Cron('40 * * * * *', { name: BATCH_TOP_AGENTS }) // har daqiqaning 40-soniyasida
-public async batchAgents() {
+@Cron('40 00 01 * * *', { name: BATCH_TOP_AGENTS }) // har daqiqaning 40-soniyasida
+public async batchTopAgents() {
+  try {
   this.logger['context'] = BATCH_TOP_AGENTS;
   this.logger.debug('EXECUTED!');
-  await this.batchService.batchAgents();
+  await this.batchService.batchTopAgents();
+  } catch (err) {
+    this.logger.error(err);
+  }
 }
 
 
