@@ -64,7 +64,7 @@ export class LikeService {
             { $skip: (page - 1) * limit },
             { $limit: limit },
 
-            lookupFavorite,
+            lookupFavorite,//memberdatasi tashkil qilindi
             { $unwind: '$favoriteProperty.memberData' },
           ],
           metaCounter: [{ $count: 'total'}],

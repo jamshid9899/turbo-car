@@ -1,22 +1,35 @@
-//TASK ZQ
-function findDuplicatesAtLeastTwo(arr: number[]): number[] {
-  const counts: Record<number, number> = {};
-  const result: number[] = [];
+//Task ZU
+function sumOfUnique(arr: number[]): number {
+  let sum: number = 0;
 
   for (const num of arr) {
-    counts[num] = (counts[num] || 0) + 1;
-  }
-
-  for (const key in counts) {
-    if (counts[key] >= 2) {
-      result.push(Number(key));
+    if (arr.indexOf(num) === arr.lastIndexOf(num)) {
+      sum += num;
     }
   }
+  return sum;
 
-  return result;
 }
+console.log(sumOfUnique([1,2,3,2]))
+//TASK ZQ
+// function findDuplicatesAtLeastTwo(arr: number[]): number[] {
+//   const counts: Record<number, number> = {};
+//   const result: number[] = [];
 
-console.log(findDuplicatesAtLeastTwo([1, 2, 3, 4, 5, 4, 3, 4])); 
+//   for (const num of arr) {
+//     counts[num] = (counts[num] || 0) + 1;
+//   }
+
+//   for (const key in counts) {
+//     if (counts[key] >= 2) {
+//       result.push(Number(key));
+//     }
+//   }
+
+//   return result;
+// }
+
+// console.log(findDuplicatesAtLeastTwo([1, 2, 3, 4, 5, 4, 3, 4])); 
 
 //console.log('NestJS test file ishladi!');
 //Task ZL

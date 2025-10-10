@@ -37,28 +37,28 @@ export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id')
         $lookup: {
             from: 'likes',
             let: {
-                localLikeRefId: targetRefId,
+                localLikeRefId: targetRefId, //search mehanizmi uchun  "_id"
                 localMemberId: memberId,
-                localMyFavorite: true,
+                localMyFavorite: true,//like bosdimi yoqmi
             },
             pipeline: [
                 {
-                    $match: {
+                    $match: { //1nechta bolsa expr keeps only doc that match the condition
                         $expr: {
                             $and:  [{ $eq: ['$likeRefId', '$$localLikeRefId'] }, { $eq: ['$memberId', '$$localMemberId'] }],
                         },
                     },
                 },
                 {
-                    $project: {
-                        _id: 0, 
+                    $project: { // contorl what fields  to include in the lookup's output
+                        _id: 0, //idni olib bermasin
                         memberId: 1,
                         likeRefId: 1,
-                        myFavorite: '$$localMyFavorite',
+                        myFavorite: '$$localMyFavorite', //= localMyFavorite: true,
                     },
                 },
             ],
-            as: 'meLiked',
+            as: 'meLiked',//qanaqa nom bilan saqlash
         },
     };
 };
