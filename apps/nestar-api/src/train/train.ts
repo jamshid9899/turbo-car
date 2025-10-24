@@ -10,7 +10,9 @@ function sumOfUnique(arr: number[]): number {
   return sum;
 
 }
-console.log(sumOfUnique([1,2,3,2]))
+console.log(sumOfUnique([1,2,3,2
+  
+]))
 //TASK ZQ
 // function findDuplicatesAtLeastTwo(arr: number[]): number[] {
 //   const counts: Record<number, number> = {};
