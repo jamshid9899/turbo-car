@@ -5,10 +5,10 @@ import { Like, MeLiked } from '../../libs/dto/like/like';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { Message } from '../../libs/enums/common.enum';
 import { T } from '../../libs/types/common';
-import { OrdinaryInquiry } from '../../libs/dto/property/property.input';
 import { Properties } from '../../libs/dto/property/property';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { lookupFavorite } from '../../libs/config';
+import { OrdinaryInquiry } from '../../libs/dto/property/property.filter';
 
 @Injectable()
 export class LikeService {
@@ -73,7 +73,8 @@ export class LikeService {
     ])
     .exec();
     console.log('data:', data)
-    const result: Properties = { list: [], metaCounter: data[0].metaCounter };
+    const result: Properties = { list: [], totalCount: data[0].metaCounter?.length ? data[0].metaCounter[0].total : 0
+};
     console.log('result:', result)
     result.list = data[0].list.map((ele) => ele.favoriteProperty);
     console.log('result:', result)

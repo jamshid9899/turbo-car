@@ -4,10 +4,10 @@ import { Model, ObjectId } from 'mongoose';
 import { View } from '../../libs/dto/view/view';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { T } from '../../libs/types/common';
-import { OrdinaryInquiry } from '../../libs/dto/property/property.input';
 import { Properties } from '../../libs/dto/property/property';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { lookupVisit } from '../../libs/config';
+import { OrdinaryInquiry } from '../../libs/dto/property/property.filter';
 
 @Injectable()
 export class ViewService {
@@ -64,7 +64,8 @@ export class ViewService {
         ])
         .exec();
         console.log('data:', data)
-        const result: Properties = { list: [], metaCounter: data[0].metaCounter };
+        const result: Properties = { list: [],  totalCount: data[0].metaCounter?.length ? data[0].metaCounter[0].total : 0
+};
         console.log('result:', result)
         result.list = data[0].list.map((ele) => ele.visitedProperty);
         console.log('result:', result)
