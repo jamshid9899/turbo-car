@@ -1,98 +1,123 @@
+// property.dto.ts
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import type { ObjectId } from 'mongoose';
-import { PropertyLocation, PropertyStatus, PropertyType } from '../../enums/property.enum';
-import { Member, TotalCounter } from '../member/member';
+import {
+  PropertyCondition,
+  PropertyBrand,
+  PropertyType,
+  PropertyFuelType,
+  PropertyColor,
+  PropertyTransmission,
+  PropertyFeatures,
+  PropertyCylinders,
+  PropertyStatus,
+  PropertyLocation,
+} from '../../enums/property.enum';
+import { Member } from '../member/member';
 import { MeLiked } from '../like/like';
 
-@ObjectType() //dto
+@ObjectType()
 export class Property {
- @Field(() => String)
- _id: ObjectId;
+  @Field(() => String)
+  _id: ObjectId;
 
- @Field(() => PropertyType)
- propertyType: PropertyType;
+  @Field(() => PropertyCondition)
+  propertyCondition: PropertyCondition;
 
- @Field(() => PropertyStatus)
- propertyStatus: PropertyStatus;
+  @Field(() => PropertyBrand)
+  propertyBrand: PropertyBrand;
 
- @Field(() => PropertyLocation)
- propertyLocation: PropertyLocation;
+  @Field(() => PropertyType)
+  propertyBodyType: PropertyType;
 
- @Field(() => String)
- propertyAddress: string;
+  @Field(() => PropertyFuelType)
+  propertyFuelType: PropertyFuelType;
 
- @Field(() => String)
- propertyTitle: string;
+  @Field(() => PropertyStatus)
+  propertyStatus: PropertyStatus;
 
- @Field(() => Number)
- propertyPrice: number;
+  @Field(() => PropertyLocation)
+  propertyLocation: PropertyLocation;
 
- @Field(() => Number)
- propertySquare: number;
+  @Field(() => PropertyColor)
+  propertyColor: PropertyColor;
 
- @Field(() => Int)
- propertyBeds: number;
+  @Field(() => PropertyTransmission)
+  propertyTransmission: PropertyTransmission;
 
- @Field(() => Int)
- propertyRooms: number;
+  @Field(() => [PropertyFeatures])
+  propertyFeatures: PropertyFeatures[];
 
- @Field(() => Int)
- propertyViews: number;
+  @Field(() => PropertyCylinders)
+  propertyCylinders: PropertyCylinders;
 
- @Field(() => Int)
- propertyLikes: number;
+  @Field(() => Int)
+  propertyYear: number;
 
- @Field(() => Int)
- propertyComments: number;
+  @Field(() => String)
+  propertyTitle: string;
 
- @Field(() => Int)
- propertyRank: number;
+  @Field(() => Number)
+  propertyPrice: number;
 
- @Field(() => [String])
- propertyImages: string[];
+  @Field(() => Number)
+  propertyMileage: number;
 
- @Field(() => String, { nullable: true })
- propertyDesc?: string;
+  @Field(() => Int)
+  propertyViews: number;
 
- @Field(() => Boolean)
- propertyBarter: boolean;
+  @Field(() => Int)
+  propertyLikes: number;
 
- @Field(() => Boolean)
- propertyRent: boolean;
+  @Field(() => Int)
+  propertyComments: number;
 
- @Field(() => String)
- memberId: ObjectId;
+  @Field(() => Int)
+  propertyRank: number;
 
- @Field(() => Date, { nullable: true })
- soldAt?: Date;
+  @Field(() => [String])
+  propertyImages: string[];
 
- @Field(() => Date, { nullable: true })
- deletedAt?: Date;
+  @Field(() => String, { nullable: true })
+  propertyDesc?: string;
 
- @Field(() => Date, { nullable: true })
- constructedAt?: Date;
+  @Field(() => Boolean)
+  isForSale: boolean;
 
- @Field(() => Date)
- createdAt: Date;
+  @Field(() => Boolean)
+  isForRent: boolean;
 
- @Field(() => Date)
- updatedAt: Date;
- 
- /** from aggregation */
- @Field(() => [MeLiked], { nullable: true})
- meLiked?: MeLiked[];
+  @Field(() => String)
+  memberId: ObjectId;
 
- @Field(() => Member, { nullable: true})
- memberData?: Member;
+  @Field(() => Date, { nullable: true })
+  soldAt?: Date;
 
- 
+  @Field(() => Date, { nullable: true })
+  deletedAt?: Date;
+
+  @Field(() => Date, { nullable: true })
+  constructedAt?: Date;
+
+  @Field(() => Date)
+  createdAt: Date;
+
+  @Field(() => Date)
+  updatedAt: Date;
+
+  @Field(() => Member, { nullable: true })
+  memberData?: Member;
+
+  @Field(() => [MeLiked], { nullable: true })
+  meLiked?: MeLiked[];
 }
 
 @ObjectType()
 export class Properties {
-    @Field(() => [Property])
-    list: Property[];
+  @Field(() => [Property])
+  list: Property[];
 
-    @Field(() => [TotalCounter], { nullable: true })
-    metaCounter: TotalCounter[];
+  // Meta info — e.g. total count/pagination info, if you need
+  @Field(() => Int, { nullable: true })
+  totalCount?: number;
 }

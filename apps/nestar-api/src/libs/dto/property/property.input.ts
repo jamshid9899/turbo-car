@@ -1,253 +1,102 @@
+// property.input.ts
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsAlpha, IsIn, IsInt, IsNotEmpty, IsOptional, Length, Min } from 'class-validator';
-import { PropertyLocation, PropertyStatus, PropertyType } from '../../enums/property.enum';
+import { IsNotEmpty, IsInt, Min, Length, IsBoolean, IsOptional, IsEnum, IsArray, ArrayNotEmpty } from 'class-validator';
 import type { ObjectId } from 'mongoose';
-import { availableOptions, availablePropertySorts } from '../../config';
-import { Direction } from '../../enums/common.enum';
+import {
+  PropertyCondition,
+  PropertyBrand,
+  PropertyType,
+  PropertyFuelType,
+  PropertyColor,
+  PropertyTransmission,
+  PropertyFeatures,
+  PropertyCylinders,
+  PropertyLocation,
+} from '../../enums/property.enum';
 
 @InputType()
 export class PropertyInput {
- @IsNotEmpty()
- @Field(() => PropertyType)
- propertyType: PropertyType;
+  @IsNotEmpty()
+  @Field(() => PropertyCondition)
+  propertyCondition: PropertyCondition;
 
- @IsNotEmpty()
- @Field(() => PropertyLocation)
- propertyLocation: PropertyLocation;
+  @IsNotEmpty()
+  @Field(() => PropertyBrand)
+  propertyBrand: PropertyBrand;
 
- @IsNotEmpty()
- @Length(3, 100)
- @Field(() => String)
- propertyAddress: string;
+  @IsNotEmpty()
+  @Field(() => PropertyType)
+  propertyBodyType: PropertyType;
 
- @IsNotEmpty()
- @Length(3, 100)
- @Field(() => String)
- propertyTitle: string;
+  @IsNotEmpty()
+  @Field(() => PropertyFuelType)
+  propertyFuelType: PropertyFuelType;
 
- @IsNotEmpty()
- @Field(() => Number)
- propertyPrice: number;
+  @IsNotEmpty()
+  @Field(() => PropertyLocation)
+  propertyLocation: PropertyLocation;
 
- @IsNotEmpty()
- @Field(() => Number)
- propertySquare: number;
+  @IsNotEmpty()
+  @Field(() => PropertyColor)
+  propertyColor: PropertyColor;
 
- @IsNotEmpty()
- @IsInt()
- @Min(1)
- @Field(() => Int)
- propertyBeds: number;
+  @IsNotEmpty()
+  @Field(() => PropertyTransmission)
+  propertyTransmission: PropertyTransmission;
 
- @IsNotEmpty()
- @IsInt()
- @Min(1)
- @Field(() => Int)
- propertyRooms: number;
+  @IsNotEmpty()
+  @Field(() => [PropertyFeatures])
+  @IsArray()
+  @ArrayNotEmpty()
+  propertyFeatures: PropertyFeatures[];
 
- @IsNotEmpty()
- @Field(() => [String])
- propertyImages: string[];
+  @IsNotEmpty()
+  @Field(() => PropertyCylinders)
+  propertyCylinders: PropertyCylinders;
 
- @IsOptional()
- @Field(() => String, { nullable: true })
- @Length(5, 500)
- propertyDesc?: string;
+  @IsNotEmpty()
+  @IsInt()
+  @Field(() => Int)
+  propertyYear: number;
 
- @IsOptional()
- @Field(() => Boolean, { nullable: true })
- propertyBarter?: boolean;
+  @IsNotEmpty()
+  @Length(3, 100)
+  @Field(() => String)
+  propertyTitle: string;
 
- @IsOptional()
- @Field(() => Boolean, { nullable: true })
- propertyRent?: boolean;
+  @IsNotEmpty()
+  @Field(() => Number)
+  propertyPrice: number;
 
- memberId?: ObjectId;
+  @IsNotEmpty()
+  @Field(() => Number)
+  propertyMileage: number;
 
- @IsOptional()
- @Field(() => Date, { nullable: true })
- constructedAt: Date;
-}
- 
- @InputType()
- export class PricesRange {
-    @Field(() => Int)
-    start: number;
+  @IsNotEmpty()
+  @Field(() => [String])
+  @IsArray()
+  @ArrayNotEmpty()
+  propertyImages: string[];
 
-    @Field(() => Int)
-    end: number;
- }
-
- @InputType()
- export class SqueresRange {
-    @Field(() => Int)
-    start: number;
-
-    @Field(() => Int)
-    end: number;
- }
-
- @InputType()
- export class PeriodsRange {
-    @Field(() => Date)
-    start: Date;
-
-    @Field(() => Date)
-    end: Date;
- }
- 
- @InputType()
- class PISearch {
   @IsOptional()
+  @Length(5, 500)
   @Field(() => String, { nullable: true })
+  propertyDesc?: string;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  @Field(() => Boolean)
+  isForSale: boolean;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  @Field(() => Boolean)
+  isForRent: boolean;
+
+  // owner id (optional / auto-filled on server)
   memberId?: ObjectId;
-
-  @IsOptional()
-  @Field(() => [PropertyLocation], { nullable: true })
-  locationList?: PropertyLocation[];
-
-  @IsOptional()
-  @Field(() => [PropertyType], { nullable: true })
-  typeList?: PropertyType[];
-
-  @IsOptional()
-  @Field(() => [Int], { nullable: true })
-  roomsList?: Number[];
-
-  @IsOptional()
-  @Field(() => [Int], { nullable: true })
-  bedsList?: Number[];
-
-  @IsOptional()
-  @IsIn(availableOptions, { each: true })
-  @Field(() => [String], {nullable: true })
-  options?: string[];
-
-  @IsOptional()
-  @Field(() => PricesRange, { nullable: true})
-  pricesRange?: PricesRange;
-
-  @IsOptional()
-  @Field(() => PeriodsRange, { nullable: true})
-  periodsRange?: PeriodsRange;
-
-  @IsOptional()
-  @Field(() => SqueresRange, { nullable: true})
-  squaresRange?: SqueresRange;
-
-  @IsOptional()
-  @Field(() => String, { nullable: true })
-  text?: string;
- }
-
- @InputType()
- export class PropertiesInquiry {
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- page: number;
-
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- limit : number;
-
- @IsOptional()
- @IsIn(availablePropertySorts)
- @Field(() => String, { nullable: true})
- sort?: string;
-
- @IsOptional()
- @Field(() => Direction, { nullable: true })
- direction?: Direction;
-
- @IsNotEmpty()
- @Field(() => PISearch)
- search: PISearch;
 }
 
-@InputType()
- class APISearch {
-  @IsOptional()
-  @Field(() => PropertyStatus, { nullable: true })
-   propertyStatus?: PropertyStatus;
- }
-
- @InputType()
- export class AgentPropertiesInquiry {
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- page: number;
-
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- limit : number;
-
- @IsOptional()
- @IsIn(availablePropertySorts)
- @Field(() => String, { nullable: true})
- sort?: string;
-
- @IsOptional()
- @Field(() => Direction, { nullable: true })
- direction?: Direction;
-
- @IsNotEmpty()
- @Field(() => APISearch)
- search: APISearch;
-}
-
-@InputType()
-class ALPISearch {
-  @IsOptional()
-  @Field(() => PropertyStatus, { nullable: true })
-  propertyStatus?: PropertyStatus;
-
-  @IsOptional()
-  @Field(() => [PropertyLocation], { nullable: true })
-  propertyLocationList?: PropertyLocation[];
-}
-
-@InputType()
- export class AllPropertiesInquiry {
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- page: number;
-
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- limit : number;
-
- @IsOptional()
- @IsIn(availablePropertySorts)
- @Field(() => String, { nullable: true})
- sort?: string;
-
- @IsOptional()
- @Field(() => Direction, { nullable: true })
- direction?: Direction;
-
- @IsNotEmpty()
- @Field(() => ALPISearch)
- search: ALPISearch;
-}
-
-@InputType()
- export class OrdinaryInquiry {
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- page: number;
-
- @IsNotEmpty()
- @Min(1)
- @Field(() => Int)
- limit : number;
-}
 
 
 

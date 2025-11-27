@@ -1,73 +1,95 @@
-import { Field, InputType, Int } from "@nestjs/graphql";
-import { IsInt, IsNotEmpty, IsOptional, Length, Min } from "class-validator";
-import type { ObjectId } from "mongoose";
-import { PropertyLocation, PropertyStatus, PropertyType } from "../../enums/property.enum";
-
+// property.update.ts
+import { Field, InputType, Int } from '@nestjs/graphql';
+import { IsOptional, IsInt, Min, Length, IsEnum, IsArray } from 'class-validator';
+import type { ObjectId } from 'mongoose';
+import {
+  PropertyCondition,
+  PropertyBrand,
+  PropertyType,
+  PropertyFuelType,
+  PropertyColor,
+  PropertyTransmission,
+  PropertyFeatures,
+  PropertyCylinders,
+  PropertyLocation,
+  PropertyStatus,
+} from '../../enums/property.enum';
 
 @InputType()
 export class PropertyUpdate {
-    @IsNotEmpty()
-    @Field(() => String)
-    _id: ObjectId;
+  @Field(() => String)
+  _id: ObjectId;
 
-    @IsOptional()
-    @Field(() => PropertyType, { nullable: true })
-    propertyType?: PropertyType;
+  @IsOptional()
+  @Field(() => PropertyCondition, { nullable: true })
+  propertyCondition?: PropertyCondition;
 
-    @IsOptional()
-    @Field(() => PropertyStatus, { nullable: true })
-    propertyStatus?: PropertyStatus;
+  @IsOptional()
+  @Field(() => PropertyBrand, { nullable: true })
+  propertyBrand?: PropertyBrand;
 
-    @IsOptional()
-    @Field(() => PropertyLocation, { nullable: true })
-    propertyLocation?: PropertyLocation;
+  @IsOptional()
+  @Field(() => PropertyType, { nullable: true })
+  propertyBodyType?: PropertyType;
 
-    @IsOptional()
-    @Length(3, 100)
-    @Field(() => String, { nullable: true })
-    propertyAddress?: string;
+  @IsOptional()
+  @Field(() => PropertyFuelType, { nullable: true })
+  propertyFuelType?: PropertyFuelType;
 
-    @IsOptional()
-    @Length(3, 100)
-    @Field(() => String, { nullable: true })
-    propertyTitle?: string;
+  @IsOptional()
+  @Field(() => PropertyStatus, { nullable: true })
+  propertyStatus?: PropertyStatus;
 
-    @IsOptional()
-    @Field(() => Number, { nullable: true })
-    propertyPrice?: number;
+  @IsOptional()
+  @Field(() => PropertyLocation, { nullable: true })
+  propertyLocation?: PropertyLocation;
 
-    @IsOptional()
-    @Field(() => Number, { nullable: true })
-    propertySquare?: number;
+  @IsOptional()
+  @Field(() => PropertyColor, { nullable: true })
+  propertyColor?: PropertyColor;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Field(() => Int, { nullable: true })
-    propertyBeds?: number;
+  @IsOptional()
+  @Field(() => PropertyTransmission, { nullable: true })
+  propertyTransmission?: PropertyTransmission;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Field(() => Int, { nullable: true })
-    propertyRooms?: number;
+  @IsOptional()
+  @Field(() => [PropertyFeatures], { nullable: true })
+  propertyFeatures?: PropertyFeatures[];
 
-    @IsOptional()
-    @Field(() => [String], { nullable: true })
-    propertyImages?: string[];
+  @IsOptional()
+  @Field(() => PropertyCylinders, { nullable: true })
+  propertyCylinders?: PropertyCylinders;
 
-    @IsOptional()
-    @Length(5, 500)
-    @Field(() => String, { nullable: true })
-    propertyDesc?: string;
+  @IsOptional()
+  @Length(3, 100)
+  @Field(() => String, { nullable: true })
+  propertyTitle?: string;
 
-    @IsOptional()
-    @Field(() => Boolean, { nullable: true })
-    propertyBarter?: boolean;
+  @IsOptional()
+  @Field(() => Number, { nullable: true })
+  propertyPrice?: number;
 
-    @IsOptional()
-    @Field(() => Boolean, { nullable: true })
-    propertyRent?: boolean;
+  @IsOptional()
+  @Field(() => Number, { nullable: true })
+  propertyMileage?: number;
+
+  @IsOptional()
+  @Field(() => [String], { nullable: true })
+  propertyImages?: string[];
+
+  @IsOptional()
+  @Length(5, 500)
+  @Field(() => String, { nullable: true })
+  propertyDesc?: string;
+
+  @IsOptional()
+  @Field(() => Boolean, { nullable: true })
+  isForSale?: boolean;
+
+  @IsOptional()
+  @Field(() => Boolean, { nullable: true })
+  isForRent?: boolean;
+
 
     soldAt?: Date;
 
@@ -76,5 +98,4 @@ export class PropertyUpdate {
     @IsOptional()
     @Field(() => Date, { nullable: true })
     constructedAt?: Date;
-
 }

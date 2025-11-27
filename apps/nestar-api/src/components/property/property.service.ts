@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Schema } from 'mongoose';
 import { MemberService } from '../member/member.service';
-import { AgentPropertiesInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { PropertyInput } from '../../libs/dto/property/property.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { Properties, Property } from '../../libs/dto/property/property';
 import { PropertyStatus } from '../../libs/enums/property.enum';
@@ -15,6 +15,7 @@ import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../
 import { LikeService } from '../like/like.service';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeInput } from '../../libs/dto/like/like.input';
+import { AgentPropertiesInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry } from '../../libs/dto/property/property.filter';
 
 
 @Injectable()
@@ -128,35 +129,59 @@ export class PropertyService {
   }
 
   private shapeMatchQuery(match: T, input: PropertiesInquiry): void {
+    if (!input.filter) return;
+
     const {
-      memberId,
       locationList,
-      roomsList,
-      bedsList,
       typeList,
-      periodsRange,
-      pricesRange,
-      squaresRange,
-      options,
+      conditionList,
+      fuelTypeList,
+      transmissionList,
+      featuresList,
+      brandList,
+      cylindersList,
+      colorList,
+      
+      minPrice,
+      maxPrice,
+      minMileage,
+      maxMileage,
+      minYear,
+      maxYear,
+
+      isForSale,
+      isForRent,
+
       text
-    } = input.search;
-    if (memberId) match.memberId = shapeIntoMongoObjectId(memberId);
-    if (locationList && locationList.length) match.propertyLocation = { $in: locationList };
-    if (roomsList && roomsList.length) match.propertyRooms = { $in: roomsList };
-    if (bedsList && bedsList.length) match.propertyBeds = { $in: bedsList };
-    if (typeList && typeList.length) match.propertyType = { $in: typeList };
+    } = input.filter;
 
-    if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
-    if (periodsRange) match.createdAt = { $gte: periodsRange.start, $lte: periodsRange.end };
-    if (squaresRange) match.propertySquare = { $gte: squaresRange.start, $lte: squaresRange.end };
+    if (locationList?.length) match.propertyLocation = { $in: locationList };
+    if (typeList?.length) match.propertyBodyType = { $in: typeList };
+    if (conditionList?.length) match.propertyCondition = { $in: conditionList };
+    if (fuelTypeList?.length) match.propertyFuelType = { $in: fuelTypeList };
+    if (transmissionList?.length) match.propertyTransmission = { $in: transmissionList };
+    if (featuresList?.length) match.propertyFeatures = { $in: featuresList };
+    if (brandList?.length) match.propertyBrand = { $in: brandList };
+    if (cylindersList?.length) match.propertyCylinders = { $in: cylindersList };
+    if (colorList?.length) match.propertyColor = { $in: colorList };
 
+    if (minPrice !== undefined || maxPrice !== undefined)
+      match.propertyPrice = { $gte: minPrice ?? 0, $lte: maxPrice ?? 999999999 };
+
+    if (minMileage !== undefined || maxMileage !== undefined)
+      match.propertyMileage = { $gte: minMileage ?? 0, $lte: maxMileage ?? 999999999 };
+
+    if (minYear !== undefined || maxYear !== undefined)
+      match.propertyYear = { $gte: minYear ?? 1900, $lte: maxYear ?? 2100 };
+
+    /** RENT / SALE */
+    if (isForSale !== undefined) match.isForSale = isForSale;
+    if (isForRent !== undefined) match.isForRent = isForRent;
+
+    /** TEXT SEARCH */
     if (text) match.propertyTitle = { $regex: new RegExp(text, 'i') };
-    if (options) {
-      match['$or'] = options.map((ele) => {
-        return { [ele]: true };
-      });
-    }
-  }
+}
+
 
   /** FAVORITES */
   public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
@@ -169,33 +194,61 @@ export class PropertyService {
   }
 
   public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
-    const { propertyStatus } = input.search;
-    if (propertyStatus === PropertyStatus.DELETE) throw new BadRequestException(Message.NOT_ALLOWED_REQUEST);
+    const { propertyStatus, propertyLocationList, isForSale, isForRent } = input.search;
+
+    // DELETE statusni agent ko'ra olmaydi → to‘g‘ri
+    if (propertyStatus === PropertyStatus.DELETE) {
+      throw new BadRequestException(Message.NOT_ALLOWED_REQUEST);
+    }
 
     const match: T = {
-      memberId: memberId,
+      memberId: memberId, // faqat o‘zi joylagan moshinalar
       propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
     };
-    const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
-    const result = await this.propertyModel.aggregate([
-      { $match: match },
-      { $sort: sort },
-      {
-        $facet: {
-          list: [
-            { $skip: (input.page - 1) * input.limit },
-            { $limit: input.limit },
-            lookupMember,
-            { $unwind: '$memberData' },
-          ],
-          metaCounter: [{ $count: 'total' }],
-        }
-      }
-    ])
+
+    // 🔥 Location filter
+    if (propertyLocationList?.length) {
+      match.propertyLocation = { $in: propertyLocationList };
+    }
+
+    // 🔥 SALE / RENT filterlar qo‘shildi
+    if (isForSale !== undefined) {
+      match.isForSale = isForSale;
+    }
+
+    if (isForRent !== undefined) {
+      match.isForRent = isForRent;
+    }
+
+    const sort: T = {
+      [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+    };
+
+    const result = await this.propertyModel
+      .aggregate([
+        { $match: match },
+        { $sort: sort },
+        {
+          $facet: {
+            list: [
+              { $skip: (input.page - 1) * input.limit },
+              { $limit: input.limit },
+              lookupMember,
+              { $unwind: '$memberData' },
+            ],
+            metaCounter: [{ $count: 'total' }],
+          },
+        },
+      ])
       .exec();
-    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+    if (!result.length) {
+      throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+    }
+
     return result[0];
-  }
+}
+
 
   /**LIKES */
   public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId): Promise<Property> {
