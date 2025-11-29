@@ -58,7 +58,7 @@ export class PropertyService {
       const viewInput = { memberId: memberId, viewRefId: propertyId, viewGroup: ViewGroup.PROPERTY };
       const newView = await this.viewService.recordView(viewInput);
       if (newView) {
-        await this.propertyStatsEditor({ _id: propertyId, targetKey: 'propertyviews', modifier: 1 });
+        await this.propertyStatsEditor({ _id: propertyId, targetKey: 'propertyViews', modifier: 1 });
         targetProperty.propertyViews++;
       }
 
@@ -156,7 +156,7 @@ export class PropertyService {
     } = input.filter;
 
     if (locationList?.length) match.propertyLocation = { $in: locationList };
-    if (typeList?.length) match.propertyBodyType = { $in: typeList };
+    if (typeList?.length) match.propertyType = { $in: typeList };
     if (conditionList?.length) match.propertyCondition = { $in: conditionList };
     if (fuelTypeList?.length) match.propertyFuelType = { $in: fuelTypeList };
     if (transmissionList?.length) match.propertyTransmission = { $in: transmissionList };
@@ -333,6 +333,28 @@ export class PropertyService {
 
     return result;
   }
+  // property.service.ts
+
+/** UPDATE BY OWNER (for rental automation) */
+public async updatePropertyByOwner(
+  ownerId: ObjectId, 
+  input: Partial<PropertyUpdate>
+): Promise<Property> {
+  const result = await this.propertyModel.findOneAndUpdate(
+    { 
+      _id: input._id, 
+      memberId: ownerId 
+    },
+    input,
+    { new: true }
+  ).exec();
+
+  if (!result) {
+    throw new InternalServerErrorException(Message.UPDATE_FAILED);
+  }
+
+  return result;
+}
 
   public async propertyStatsEditor(input: StatisticModifier): Promise<Property> {
     const { _id, targetKey, modifier } = input;
@@ -346,3 +368,6 @@ export class PropertyService {
       .exec();
   }
 }
+
+
+  

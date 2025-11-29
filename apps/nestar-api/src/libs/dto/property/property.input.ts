@@ -26,7 +26,7 @@ export class PropertyInput {
 
   @IsNotEmpty()
   @Field(() => PropertyType)
-  propertyBodyType: PropertyType;
+  propertyType: PropertyType;
 
   @IsNotEmpty()
   @Field(() => PropertyFuelType)
@@ -53,6 +53,16 @@ export class PropertyInput {
   @IsNotEmpty()
   @Field(() => PropertyCylinders)
   propertyCylinders: PropertyCylinders;
+
+  @IsOptional()
+  @Field(() => Number, { nullable: true })
+  propertyRentPrice?: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  @Min(2)
+  @Field(() => Int)
+  propertySeats: number;
 
   @IsNotEmpty()
   @IsInt()

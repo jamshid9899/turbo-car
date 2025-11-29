@@ -28,7 +28,7 @@ export class Property {
   propertyBrand: PropertyBrand;
 
   @Field(() => PropertyType)
-  propertyBodyType: PropertyType;
+  propertyType: PropertyType;
 
   @Field(() => PropertyFuelType)
   propertyFuelType: PropertyFuelType;
@@ -81,6 +81,12 @@ export class Property {
   @Field(() => String, { nullable: true })
   propertyDesc?: string;
 
+  @Field(() => Number, { nullable: true })
+  propertyRentPrice?: number;
+
+  @Field(() => Int)
+  propertySeats: number;
+
   @Field(() => Boolean)
   isForSale: boolean;
 
@@ -89,6 +95,15 @@ export class Property {
 
   @Field(() => String)
   memberId: ObjectId;
+
+  @Field(() => Date, { nullable: true })
+  rentedUntil?: Date;
+
+  @Field(() => Int, { nullable: true })
+  minimumRentDays?: number;
+
+  @Field(() => Int, { nullable: true })
+  maximumRentDays?: number;
 
   @Field(() => Date, { nullable: true })
   soldAt?: Date;

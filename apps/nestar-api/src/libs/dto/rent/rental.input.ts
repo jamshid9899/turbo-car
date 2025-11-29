@@ -10,7 +10,7 @@ export class RentalBookingInput {
 
   @IsNotEmpty()
   @Field(() => String)
-  ownerId: string;
+  renterId: string;
 
   @IsDateString()
   @Field(() => Date)

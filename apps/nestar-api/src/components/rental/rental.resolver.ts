@@ -4,60 +4,105 @@ import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import type { ObjectId } from 'mongoose';
-import { shapeIntoMongoObjectId } from '../../libs/config';
 import { RentalBooking } from '../../libs/dto/rent/rental.dto';
 import { RentalBookingInput } from '../../libs/dto/rent/rental.input';
+import { shapeIntoMongoObjectId } from '../../libs/config'; // ✅ IMPORT QO'SHILDI
 
 @Resolver()
 export class RentalResolver {
   constructor(private readonly rentalService: RentalService) {}
 
-  /** CREATE RENT */
+  /** 
+   * CREATE RENTAL BOOKING
+   * Foydalanuvchi mashinani rent qilish uchun so'rov yuboradi
+   * Input: propertyId, startDate, endDate, rentalType, totalPrice
+   * renterId va ownerId avtomatik qo'shiladi
+   */
   @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async createRentalBooking(
     @Args('input') input: RentalBookingInput,
     @AuthMember('_id') memberId: ObjectId,
   ): Promise<RentalBooking> {
+    console.log('Mutation: createRentalBooking');
     return await this.rentalService.createRentalBooking(input, memberId);
   }
 
-  /** MY RENTALS */
+  /** 
+   * CONFIRM RENTAL
+   * Faqat property owner (agent) rental'ni tasdiqlashi mumkin
+   * Status: PENDING → CONFIRMED
+   * Property status: ACTIVE → RENTED
+   */
+  @UseGuards(AuthGuard)
+  @Mutation(() => RentalBooking)
+  async confirmRental(
+    @Args('rentalId') input: string,
+    @AuthMember('_id') memberId: ObjectId,
+  ): Promise<RentalBooking> {
+    console.log('Mutation: confirmRental');
+    const rentalId = shapeIntoMongoObjectId(input); // ✅ CONVERSION
+    return await this.rentalService.confirmRental(rentalId, memberId);
+  }
+
+  /** 
+   * GET MY RENTALS
+   * Foydalanuvchi o'zi qilgan barcha rental'larni ko'radi
+   * (Men qaysi mashinalarni rent qilganman)
+   */
   @UseGuards(AuthGuard)
   @Query(() => [RentalBooking])
   async getMyRentals(
     @AuthMember('_id') memberId: ObjectId,
   ): Promise<RentalBooking[]> {
+    console.log('Query: getMyRentals');
     return await this.rentalService.getMyRentals(memberId);
   }
 
-  /** AGENT/OWNER RENTALS */
+  /** 
+   * GET OWNER RENTALS
+   * Agent o'zining mashinalariga qilingan rental'larni ko'radi
+   * (Mening mashinalarimni kimlar rent qilgan)
+   */
   @UseGuards(AuthGuard)
   @Query(() => [RentalBooking])
   async getOwnerRentals(
     @AuthMember('_id') memberId: ObjectId,
   ): Promise<RentalBooking[]> {
+    console.log('Query: getOwnerRentals');
     return await this.rentalService.getOwnerRentals(memberId);
   }
 
-  /** CANCEL RENT */
+  /** 
+   * CANCEL RENTAL
+   * Renter yoki owner rental'ni bekor qilishi mumkin
+   * Agar CONFIRMED bo'lsa → Property status ACTIVE'ga qaytadi
+   */
   @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async cancelRental(
-    @Args('rentalId') id: string,
+    @Args('rentalId') input: string,
     @AuthMember('_id') memberId: ObjectId,
   ): Promise<RentalBooking> {
-    return await this.rentalService.cancelRental(id, memberId);
+    console.log('Mutation: cancelRental');
+    const rentalId = shapeIntoMongoObjectId(input); // ✅ CONVERSION
+    return await this.rentalService.cancelRental(rentalId, memberId);
   }
 
-  /** FINISH RENT */
+  /** 
+   * FINISH RENTAL
+   * Faqat owner rental'ni tugatishi mumkin
+   * Status: CONFIRMED → FINISHED
+   * Property status: RENTED → ACTIVE
+   */
   @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async finishRental(
-    @Args('rentalId') id: string,
+    @Args('rentalId') input: string,
     @AuthMember('_id') memberId: ObjectId,
   ): Promise<RentalBooking> {
-    return await this.rentalService.finishRental(id, memberId);
+    console.log('Mutation: finishRental');
+    const rentalId = shapeIntoMongoObjectId(input); // ✅ CONVERSION
+    return await this.rentalService.finishRental(rentalId, memberId);
   }
 }
-

@@ -10,7 +10,8 @@ registerEnumType(RentalType, {
 });
 
 export enum RentalStatus {
-  ACTIVE = "ACTIVE",
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
   CANCELLED = "CANCELLED",
   FINISHED = "FINISHED",
 }
