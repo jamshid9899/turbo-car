@@ -15,7 +15,7 @@ import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../
 import { LikeService } from '../like/like.service';
 import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeInput } from '../../libs/dto/like/like.input';
-import { AgentPropertiesInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry } from '../../libs/dto/property/property.filter';
+import { AgentPropertiesInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry, PropertySearchFilter } from '../../libs/dto/property/property.filter';
 
 
 @Injectable()
@@ -99,88 +99,97 @@ export class PropertyService {
   }
 
   public async getProperties(memberId: ObjectId, input: PropertiesInquiry): Promise<Properties> {
-    const match: T = { propertyStatus: PropertyStatus.ACTIVE };
-    const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+  const match: T = { propertyStatus: PropertyStatus.ACTIVE };
+  const sort: T = { [input.sort ?? 'createdAt']: input.direction ?? Direction.DESC };
 
-    this.shapeMatchQuery(match, input);
-    console.log('match:', match);
+  // ⭐⭐ ENG MUHIM O‘ZGARISH ⭐⭐
+  this.shapeMatchQuery(match, input.filter);
 
-    const result = await this.propertyModel.aggregate([
-      { $match: match },
-      { $sort: sort },
-      {
-        $facet: {
-          list: [
-            { $skip: (input.page - 1) * input.limit },
-            { $limit: input.limit },
-            //meLiked
-            lookupAuthMemberLiked(memberId),
-            lookupMember,
-            { $unwind: '$memberData' }, //[memberData] => memberData arraysiz qilib beradi
-          ],
-          metaCounter: [{ $count: 'total' }],
-        },
-      },
-    ])
-      .exec();
-    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+  const result = await this.propertyModel.aggregate([
+    { $match: match },
+    { $sort: sort },
+    {
+      $facet: {
+        list: [
+          { $skip: (input.page - 1) * input.limit },
+          { $limit: input.limit },
+          lookupAuthMemberLiked(memberId),
+          lookupMember,
+          { $unwind: '$memberData' },
+        ],
+        metaCounter: [
+          { $count: 'totalCount' } // ⭐ totalCount nomi MUHIM!
+        ]
+      }
+    },
+    {
+      $project: {
+        list: 1,
+        totalCount: {
+          $ifNull: [
+            { $arrayElemAt: ['$metaCounter.totalCount', 0] },
+            0
+          ]
+        }
+      }
+    }
+  ]).exec();
 
-    return result[0];
-  }
-
-  private shapeMatchQuery(match: T, input: PropertiesInquiry): void {
-    if (!input.filter) return;
-
-    const {
-      locationList,
-      typeList,
-      conditionList,
-      fuelTypeList,
-      transmissionList,
-      featuresList,
-      brandList,
-      cylindersList,
-      colorList,
-      
-      minPrice,
-      maxPrice,
-      minMileage,
-      maxMileage,
-      minYear,
-      maxYear,
-
-      isForSale,
-      isForRent,
-
-      text
-    } = input.filter;
-
-    if (locationList?.length) match.propertyLocation = { $in: locationList };
-    if (typeList?.length) match.propertyType = { $in: typeList };
-    if (conditionList?.length) match.propertyCondition = { $in: conditionList };
-    if (fuelTypeList?.length) match.propertyFuelType = { $in: fuelTypeList };
-    if (transmissionList?.length) match.propertyTransmission = { $in: transmissionList };
-    if (featuresList?.length) match.propertyFeatures = { $in: featuresList };
-    if (brandList?.length) match.propertyBrand = { $in: brandList };
-    if (cylindersList?.length) match.propertyCylinders = { $in: cylindersList };
-    if (colorList?.length) match.propertyColor = { $in: colorList };
-
-    if (minPrice !== undefined || maxPrice !== undefined)
-      match.propertyPrice = { $gte: minPrice ?? 0, $lte: maxPrice ?? 999999999 };
-
-    if (minMileage !== undefined || maxMileage !== undefined)
-      match.propertyMileage = { $gte: minMileage ?? 0, $lte: maxMileage ?? 999999999 };
-
-    if (minYear !== undefined || maxYear !== undefined)
-      match.propertyYear = { $gte: minYear ?? 1900, $lte: maxYear ?? 2100 };
-
-    /** RENT / SALE */
-    if (isForSale !== undefined) match.isForSale = isForSale;
-    if (isForRent !== undefined) match.isForRent = isForRent;
-
-    /** TEXT SEARCH */
-    if (text) match.propertyTitle = { $regex: new RegExp(text, 'i') };
+  return result[0];
 }
+
+
+
+ private shapeMatchQuery(match: T, filter: PropertySearchFilter): void {
+  if (!filter) return;
+
+  const {
+    locationList,
+    typeList,
+    conditionList,
+    fuelTypeList,
+    transmissionList,
+    featuresList,
+    brandList,
+    cylindersList,
+    colorList,
+    minPrice,
+    maxPrice,
+    minMileage,
+    maxMileage,
+    minYear,
+    maxYear,
+    isForSale,
+    isForRent,
+    text,
+  } = filter;
+
+  if (locationList?.length) match.propertyLocation = { $in: locationList };
+  if (typeList?.length) match.propertyType = { $in: typeList };
+  if (conditionList?.length) match.propertyCondition = { $in: conditionList };
+  if (fuelTypeList?.length) match.propertyFuelType = { $in: fuelTypeList };
+  if (transmissionList?.length) match.propertyTransmission = { $in: transmissionList };
+  if (featuresList?.length) match.propertyFeatures = { $in: featuresList };
+  if (brandList?.length) match.propertyBrand = { $in: brandList };
+  if (cylindersList?.length) match.propertyCylinders = { $in: cylindersList };
+  if (colorList?.length) match.propertyColor = { $in: colorList };
+
+  if (minPrice != null || maxPrice != null)
+    match.propertyPrice = { $gte: minPrice ?? 0, $lte: maxPrice ?? 999999999 };
+
+  if (minMileage != null || maxMileage != null)
+    match.propertyMileage = { $gte: minMileage ?? 0, $lte: maxMileage ?? 999999999 };
+
+  if (minYear != null || maxYear != null)
+    match.propertyYear = { $gte: minYear ?? 1900, $lte: maxYear ?? 2100 };
+
+  if (isForSale !== undefined) match.isForSale = isForSale;
+  if (isForRent !== undefined) match.isForRent = isForRent;
+
+  if (text) match.propertyTitle = { $regex: new RegExp(text, 'i') };
+}
+
+
 
 
   /** FAVORITES */
@@ -193,61 +202,68 @@ export class PropertyService {
     return await this.viewService.getVisitedProperties(memberId, input);
   }
 
-  public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
-    const { propertyStatus, propertyLocationList, isForSale, isForRent } = input.search;
+ public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
+  const { propertyStatus, propertyLocationList, isForSale, isForRent } = input.search;
 
-    // DELETE statusni agent ko'ra olmaydi → to‘g‘ri
-    if (propertyStatus === PropertyStatus.DELETE) {
-      throw new BadRequestException(Message.NOT_ALLOWED_REQUEST);
+  if (propertyStatus === PropertyStatus.DELETE) {
+    throw new BadRequestException(Message.NOT_ALLOWED_REQUEST);
+  }
+
+  const match: T = {
+    memberId: memberId,
+    propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
+  };
+
+  if (propertyLocationList?.length) {
+    match.propertyLocation = { $in: propertyLocationList };
+  }
+
+  if (isForSale !== undefined) {
+    match.isForSale = isForSale;
+  }
+
+  if (isForRent !== undefined) {
+    match.isForRent = isForRent;
+  }
+
+  const sort: T = {
+    [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
+  };
+
+  const result = await this.propertyModel.aggregate([
+    { $match: match },
+    { $sort: sort },
+    {
+      $facet: {
+        list: [
+          { $skip: (input.page - 1) * input.limit },
+          { $limit: input.limit },
+          lookupMember,
+          { $unwind: '$memberData' },
+        ],
+        metaCounter: [
+          { $count: 'totalCount' }   
+        ]
+      },
+    },
+
+   
+    {
+      $project: {
+        list: 1,
+        totalCount: {
+          $ifNull: [
+            { $arrayElemAt: ['$metaCounter.totalCount', 0] },
+            0
+          ]
+        }
+      }
     }
+  ]).exec();
 
-    const match: T = {
-      memberId: memberId, // faqat o‘zi joylagan moshinalar
-      propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
-    };
-
-    // 🔥 Location filter
-    if (propertyLocationList?.length) {
-      match.propertyLocation = { $in: propertyLocationList };
-    }
-
-    // 🔥 SALE / RENT filterlar qo‘shildi
-    if (isForSale !== undefined) {
-      match.isForSale = isForSale;
-    }
-
-    if (isForRent !== undefined) {
-      match.isForRent = isForRent;
-    }
-
-    const sort: T = {
-      [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC,
-    };
-
-    const result = await this.propertyModel
-      .aggregate([
-        { $match: match },
-        { $sort: sort },
-        {
-          $facet: {
-            list: [
-              { $skip: (input.page - 1) * input.limit },
-              { $limit: input.limit },
-              lookupMember,
-              { $unwind: '$memberData' },
-            ],
-            metaCounter: [{ $count: 'total' }],
-          },
-        },
-      ])
-      .exec();
-
-    if (!result.length) {
-      throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-    }
-
-    return result[0];
+  return result[0];
 }
+
 
 
   /**LIKES */
@@ -269,33 +285,52 @@ export class PropertyService {
   }
 
   /**ADMIN */
-  public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
-    const { propertyStatus, propertyLocationList } = input.search;
+ /** ADMIN */
+public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
+  const { propertyStatus, propertyLocationList } = input.search;
 
-    const match: T = {};
-    const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+  const match: T = {};
+  const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
-    if (propertyStatus) match.propertyStatus = propertyStatus;
-    if (propertyLocationList) match.propertyLocation = { $in: propertyLocationList };
-    const result = await this.propertyModel.aggregate([
-      { $match: match },
-      { $sort: sort },
-      {
-        $facet: {
-          list: [
-            { $skip: (input.page - 1) * input.limit },
-            { $limit: input.limit },
-            lookupMember,
-            { $unwind: '$memberData' }, //[memberdata] => memberData
-          ],
-          metaCounter: [{ $count: 'total' }],
+  if (propertyStatus) match.propertyStatus = propertyStatus;
+  if (propertyLocationList?.length) match.propertyLocation = { $in: propertyLocationList };
+
+  const result = await this.propertyModel.aggregate([
+    { $match: match },
+    { $sort: sort },
+    {
+      $facet: {
+        list: [
+          { $skip: (input.page - 1) * input.limit },
+          { $limit: input.limit },
+          lookupMember,
+          { $unwind: '$memberData' }
+        ],
+        metaCounter: [
+          { $count: 'totalCount' }          // ⭐ TO‘G‘RI nom
+        ],
+      },
+    },
+    {
+      $project: {
+        list: 1,
+        totalCount: {
+          $ifNull: [
+            { $arrayElemAt: ['$metaCounter.totalCount', 0] },
+            0
+          ]
         }
       }
-    ])
-      .exec();
-    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
-    return result[0];
+    }
+  ]).exec();
+
+  if (!result.length) {
+    throw new InternalServerErrorException(Message.NO_DATA_FOUND);
   }
+
+  return result[0];
+}
+
 
   public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
     let { propertyStatus, soldAt, deletedAt } = input;

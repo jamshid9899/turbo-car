@@ -21,7 +21,7 @@ export class RentalService {
   async createRentalBooking(input: RentalBookingInput, renterId: ObjectId): Promise<RentalBooking> {
     const propertyId = shapeIntoMongoObjectId(input.propertyId);
     
-    // ✅ Get property with renterId
+    
     const property = await this.propertyService.getProperty(renterId, propertyId);
     if (!property) throw new BadRequestException("Property not found");
 

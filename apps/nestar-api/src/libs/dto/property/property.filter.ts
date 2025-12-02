@@ -23,7 +23,7 @@ import { availablePropertySorts } from '../../config';
 // MAIN PUBLIC FILTER (Home Page, Car Search Page)
 // ==================================================
 @InputType()
-class PropertySearchFilter {
+export class PropertySearchFilter {
   @IsOptional()
   @Field(() => [PropertyLocation], { nullable: true })
   locationList?: PropertyLocation[];
@@ -84,9 +84,6 @@ class PropertySearchFilter {
   @Field(() => Int, { nullable: true })
   maxYear?: number;
 
-  // ================================
-  // RENTING / SELLING FILTERS
-  // ================================
   @IsOptional()
   @Field(() => Boolean, { nullable: true })
   isForSale?: boolean;
@@ -99,6 +96,7 @@ class PropertySearchFilter {
   @Field(() => String, { nullable: true })
   text?: string;
 }
+
 
 
 // ==================================================

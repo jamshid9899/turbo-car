@@ -12,13 +12,12 @@ export class RentalBookingInput {
   @Field(() => String)
   renterId: string;
 
-  @IsDateString()
-  @Field(() => Date)
-  startDate: Date;
+  @Field()
+  startDate: string;
 
-  @IsDateString()
-  @Field(() => Date)
-  endDate: Date;
+  @Field()
+  endDate: string;
+
 
   @IsNotEmpty()
   @Field(() => RentalType)

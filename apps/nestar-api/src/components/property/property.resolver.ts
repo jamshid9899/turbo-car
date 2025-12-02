@@ -107,7 +107,7 @@ export class PropertyResolver {
    /** ADMIN GET ALL */
    @Roles(MemberType.ADMIN)
    @UseGuards(RolesGuard)
-   @Query(() => Properties)
+   @Mutation(() => Properties)
    async getAllPropertiesByAdmin(
       @Args('input') input: AllPropertiesInquiry,
    ): Promise<Properties> {
