@@ -128,8 +128,8 @@ export class PropertyResolver {
    /** ADMIN REMOVE */
    @Roles(MemberType.ADMIN)
    @UseGuards(RolesGuard)
-   @Mutation(() => Property)
-   async removePropertyByAdmin(
+   @Mutation((returns) => Property)
+   public async removePropertyByAdmin(
       @Args('propertyId') input: string,
    ): Promise<Property> {
       const propertyId = shapeIntoMongoObjectId(input);

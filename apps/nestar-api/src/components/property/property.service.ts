@@ -268,7 +268,10 @@ export class PropertyService {
 
   /**LIKES */
   public async likeTargetProperty(memberId: ObjectId, likeRefId: ObjectId): Promise<Property> {
-    const target: Property = await this.propertyModel.findOne({ _id: likeRefId, propertyStatus: PropertyStatus.ACTIVE }).exec();
+    const target: Property = await this.propertyModel.findOne({
+   _id: likeRefId,
+   propertyStatus: { $in: [PropertyStatus.ACTIVE, PropertyStatus.RENTED] }
+}).exec();
     if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
     const input: LikeInput = {
