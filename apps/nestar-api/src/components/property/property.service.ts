@@ -287,6 +287,8 @@ export class PropertyService {
     return result;
   }
 
+  
+
   /**ADMIN */
  /** ADMIN */
 public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
@@ -406,6 +408,8 @@ public async updatePropertyByOwner(
       .exec();
   }
 }
+
+
 
 
   

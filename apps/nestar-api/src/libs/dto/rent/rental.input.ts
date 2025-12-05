@@ -1,5 +1,5 @@
 import { Field, InputType } from "@nestjs/graphql";
-import { IsNotEmpty, IsDateString } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import { RentalType } from "../../enums/rental-booking.enum";
 
 @InputType()
@@ -9,15 +9,12 @@ export class RentalBookingInput {
   propertyId: string;
 
   @IsNotEmpty()
-  @Field(() => String)
-  renterId: string;
-
   @Field()
   startDate: string;
 
+  @IsNotEmpty()
   @Field()
   endDate: string;
-
 
   @IsNotEmpty()
   @Field(() => RentalType)
@@ -27,3 +24,5 @@ export class RentalBookingInput {
   @Field(() => Number)
   totalPrice: number;
 }
+
+

@@ -37,11 +37,3 @@ export class RentalBooking {
   updatedAt: Date;
 }
 
-@ObjectType()
-export class RentalBookings {
-  @Field(() => [RentalBooking])
-  list: RentalBooking[];
-
-  @Field(() => Number)
-  totalCount: number;
-}

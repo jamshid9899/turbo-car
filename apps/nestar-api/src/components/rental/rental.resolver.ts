@@ -7,6 +7,9 @@ import type { ObjectId } from 'mongoose';
 import { RentalBooking } from '../../libs/dto/rent/rental.dto';
 import { RentalBookingInput } from '../../libs/dto/rent/rental.input';
 import { shapeIntoMongoObjectId } from '../../libs/config'; // ✅ IMPORT QO'SHILDI
+import { Roles } from '../auth/decorators/roles.decorator';
+import { MemberType } from '../../libs/enums/member.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver()
 export class RentalResolver {
@@ -34,16 +37,19 @@ export class RentalResolver {
    * Status: PENDING → CONFIRMED
    * Property status: ACTIVE → RENTED
    */
-  @UseGuards(AuthGuard)
-  @Mutation(() => RentalBooking)
-  async confirmRental(
-    @Args('rentalId') input: string,
-    @AuthMember('_id') memberId: ObjectId,
-  ): Promise<RentalBooking> {
-    console.log('Mutation: confirmRental');
-    const rentalId = shapeIntoMongoObjectId(input); // ✅ CONVERSION
-    return await this.rentalService.confirmRental(rentalId, memberId);
-  }
+@Roles(MemberType.AGENT)
+@UseGuards(RolesGuard)
+@UseGuards(AuthGuard)
+@Mutation(() => RentalBooking)
+async confirmRental(
+  @Args('rentalId') input: string,
+  @AuthMember('_id') memberId: ObjectId,
+): Promise<RentalBooking> {
+  console.log('Mutation: confirmRental');
+  const rentalId = shapeIntoMongoObjectId(input);
+  return await this.rentalService.confirmRental(rentalId, memberId);
+}
+
 
   /** 
    * GET MY RENTALS
