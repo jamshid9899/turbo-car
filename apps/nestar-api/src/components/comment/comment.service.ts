@@ -74,7 +74,9 @@ export class CommentService {
 
     public async getComments(memberId: ObjectId, input: CommentsInquiry): Promise<Comments> {
         const { commentRefId } = input.search;
+        console.log('getComments search:', input.search);
         const match: T = { commentRefId: commentRefId, commentStatus: CommentStatus.ACTIVE };
+        console.log('match:', match);
         const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
 
         const result = await this.commentModel.aggregate([

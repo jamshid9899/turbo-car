@@ -1,7 +1,11 @@
-import { Field, InputType } from "@nestjs/graphql";
-import { IsNotEmpty } from "class-validator";
-import { RentalType } from "../../enums/rental-booking.enum";
+import { Field, InputType, Int } from "@nestjs/graphql";
+import { IsNotEmpty, IsEnum, IsOptional, Min, Max } from "class-validator";
+import { RentalType, RentalStatus } from "../../enums/rental-booking.enum";
 
+/** 
+ * RENTAL BOOKING INPUT
+ * Yangi rental yaratish uchun
+ */
 @InputType()
 export class RentalBookingInput {
   @IsNotEmpty()
@@ -23,6 +27,74 @@ export class RentalBookingInput {
   @IsNotEmpty()
   @Field(() => Number)
   totalPrice: number;
+}
+
+/** 
+ * RENTAL BOOKING UPDATE
+ * Rental statusni yangilash uchun
+ */
+@InputType()
+export class RentalBookingUpdate {
+  @IsNotEmpty()
+  @Field(() => String)
+  _id: string;
+
+  @IsEnum(RentalStatus)
+  @Field(() => RentalStatus)
+  rentalStatus: RentalStatus;
+}
+
+/** 
+ * RENTALS INQUIRY
+ * Admin uchun pagination va filter
+ */
+@InputType()
+export class RentalsInquiry {
+  @IsNotEmpty()
+  @Field(() => RentalSearch)
+  search: RentalSearch;
+}
+
+/** 
+ * RENTAL SEARCH
+ * Search parameters
+ */
+@InputType()
+export class RentalSearch {
+  @IsOptional()
+  @Field(() => Int, { nullable: true, defaultValue: 1 })
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Field(() => Int, { nullable: true, defaultValue: 20 })
+  @Min(1)
+  @Max(100)
+  limit?: number;
+
+  @IsOptional()
+  @Field(() => String, { nullable: true, defaultValue: 'createdAt' })
+  sort?: string;
+
+  @IsOptional()
+  @Field(() => String, { nullable: true, defaultValue: 'DESC' })
+  direction?: 'ASC' | 'DESC';
+
+  @IsOptional()
+  @Field(() => RentalStatus, { nullable: true })
+  rentalStatus?: RentalStatus;
+
+  @IsOptional()
+  @Field(() => String, { nullable: true })
+  propertyId?: string;
+
+  @IsOptional()
+  @Field(() => String, { nullable: true })
+  renterId?: string;
+
+  @IsOptional()
+  @Field(() => String, { nullable: true })
+  ownerId?: string;
 }
 
 
