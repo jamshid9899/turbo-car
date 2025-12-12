@@ -45,19 +45,9 @@ export class RentalBookingUpdate {
 }
 
 /** 
- * RENTALS INQUIRY
- * Admin uchun pagination va filter
- */
-@InputType()
-export class RentalsInquiry {
-  @IsNotEmpty()
-  @Field(() => RentalSearch)
-  search: RentalSearch;
-}
-
-/** 
  * RENTAL SEARCH
  * Search parameters
+ * ⚠️ BIRINCHI declare qilish kerak (RentalsInquiry ishlatadi)!
  */
 @InputType()
 export class RentalSearch {
@@ -97,4 +87,14 @@ export class RentalSearch {
   ownerId?: string;
 }
 
-
+/** 
+ * RENTALS INQUIRY
+ * Admin uchun pagination va filter
+ * ⚠️ RentalSearch'dan KEYIN declare qilish kerak!
+ */
+@InputType()
+export class RentalsInquiry {
+  @IsNotEmpty()
+  @Field(() => RentalSearch)
+  search: RentalSearch;
+}

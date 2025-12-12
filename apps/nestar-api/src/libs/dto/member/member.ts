@@ -25,7 +25,6 @@ export class Member {
  memberNick: string;
 
  memberPassword?: string;
-
  @Field(() => String, { nullable: true })
  memberFullName?: string;
 
