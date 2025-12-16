@@ -1,11 +1,8 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
-import { IsNotEmpty, IsEnum, IsOptional, Min, Max } from "class-validator";
+import { IsNotEmpty, IsEnum, IsOptional, Min, Max, IsDateString, IsNumber } from "class-validator";
 import { RentalType, RentalStatus } from "../../enums/rental-booking.enum";
 
-/** 
- * RENTAL BOOKING INPUT
- * Yangi rental yaratish uchun
- */
+/** ✅ RENTAL BOOKING INPUT - Validation yaxshilangan */
 @InputType()
 export class RentalBookingInput {
   @IsNotEmpty()
@@ -13,26 +10,27 @@ export class RentalBookingInput {
   propertyId: string;
 
   @IsNotEmpty()
-  @Field()
+  @IsDateString()  // ✅ FIXED
+  @Field(() => String)
   startDate: string;
 
   @IsNotEmpty()
-  @Field()
+  @IsDateString()  // ✅ FIXED
+  @Field(() => String)
   endDate: string;
 
   @IsNotEmpty()
+  @IsEnum(RentalType)
   @Field(() => RentalType)
   rentalType: RentalType;
 
   @IsNotEmpty()
+  @IsNumber()
   @Field(() => Number)
   totalPrice: number;
 }
 
-/** 
- * RENTAL BOOKING UPDATE
- * Rental statusni yangilash uchun
- */
+/** RENTAL BOOKING UPDATE */
 @InputType()
 export class RentalBookingUpdate {
   @IsNotEmpty()
@@ -44,11 +42,7 @@ export class RentalBookingUpdate {
   rentalStatus: RentalStatus;
 }
 
-/** 
- * RENTAL SEARCH
- * Search parameters
- * ⚠️ BIRINCHI declare qilish kerak (RentalsInquiry ishlatadi)!
- */
+/** RENTAL SEARCH */
 @InputType()
 export class RentalSearch {
   @IsOptional()
@@ -87,11 +81,7 @@ export class RentalSearch {
   ownerId?: string;
 }
 
-/** 
- * RENTALS INQUIRY
- * Admin uchun pagination va filter
- * ⚠️ RentalSearch'dan KEYIN declare qilish kerak!
- */
+/** RENTALS INQUIRY */
 @InputType()
 export class RentalsInquiry {
   @IsNotEmpty()

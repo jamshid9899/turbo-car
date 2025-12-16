@@ -20,7 +20,7 @@ import { availablePropertySorts } from '../../config';
 
 
 // ==================================================
-// MAIN PUBLIC FILTER (Home Page, Car Search Page)
+// MAIN PUBLIC SEARCH (Home Page, Car Search Page)
 // ==================================================
 @InputType()
 export class PropertySearchFilter {
@@ -101,6 +101,7 @@ export class PropertySearchFilter {
 
 // ==================================================
 // PUBLIC PROPERTIES INQUIRY
+// ✅ CHANGED: filter → search
 // ==================================================
 @InputType()
 export class PropertiesInquiry {
@@ -125,13 +126,13 @@ export class PropertiesInquiry {
 
   @IsNotEmpty()
   @Field(() => PropertySearchFilter)
-  filter: PropertySearchFilter;
+  search: PropertySearchFilter;  // ✅ CHANGED: filter → search
 }
 
 
 
 // ==================================================
-// AGENT (DEALER) FILTER
+// AGENT (DEALER) SEARCH
 // ==================================================
 @InputType()
 class AgentSearchFilter {
@@ -143,7 +144,6 @@ class AgentSearchFilter {
   @Field(() => [PropertyLocation], { nullable: true })
   propertyLocationList?: PropertyLocation[];
 
-  // ⭐ NEW RENT/SALE FILTERS
   @IsOptional()
   @Field(() => Boolean, { nullable: true })
   isForSale?: boolean;
@@ -186,7 +186,7 @@ export class AgentPropertiesInquiry {
 
 
 // ==================================================
-// ADMIN FILTER (View All Cars)
+// ADMIN SEARCH (View All Cars)
 // ==================================================
 @InputType()
 class AllCarSearchFilter {
@@ -202,7 +202,6 @@ class AllCarSearchFilter {
   @Field(() => [PropertyLocation], { nullable: true })
   propertyLocationList?: PropertyLocation[];
 
-  // ⭐ RENT / SALE FILTERS
   @IsOptional()
   @Field(() => Boolean, { nullable: true })
   isForSale?: boolean;

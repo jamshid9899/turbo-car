@@ -8,7 +8,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { MemberType } from '../../libs/enums/member.enum';
 import type { ObjectId } from 'mongoose';
 import { RentalBooking, Rentals } from '../../libs/dto/rent/rental.dto';
-import { RentalBookingInput, RentalsInquiry} from '../../libs/dto/rent/rental.input';
+import { RentalBookingInput, RentalsInquiry } from '../../libs/dto/rent/rental.input';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 
 @Resolver()
@@ -19,10 +19,7 @@ export class RentalResolver {
    *    USER OPERATIONS      *
    **************************/
 
-  /** 
-   * CREATE RENTAL BOOKING
-   * Foydalanuvchi mashinani rent qilish uchun so'rov yuboradi
-   */
+  /** CREATE RENTAL BOOKING */
   @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async createRentalBooking(
@@ -33,13 +30,9 @@ export class RentalResolver {
     return await this.rentalService.createRentalBooking(input, memberId);
   }
 
-  /** 
-   * CONFIRM RENTAL
-   * Faqat property owner (agent) rental'ni tasdiqlashi mumkin
-   */
+  /** CONFIRM RENTAL - Faqat property owner */
   @Roles(MemberType.AGENT)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async confirmRental(
     @Args('rentalId') input: string,
@@ -50,10 +43,7 @@ export class RentalResolver {
     return await this.rentalService.confirmRental(rentalId, memberId);
   }
 
-  /** 
-   * GET MY RENTALS
-   * Foydalanuvchi o'zi qilgan barcha rental'larni ko'radi
-   */
+  /** GET MY RENTALS */
   @UseGuards(AuthGuard)
   @Query(() => [RentalBooking])
   async getMyRentals(
@@ -63,10 +53,7 @@ export class RentalResolver {
     return await this.rentalService.getMyRentals(memberId);
   }
 
-  /** 
-   * GET OWNER RENTALS
-   * Agent o'zining mashinalariga qilingan rental'larni ko'radi
-   */
+  /** GET OWNER RENTALS */
   @UseGuards(AuthGuard)
   @Query(() => [RentalBooking])
   async getOwnerRentals(
@@ -76,10 +63,7 @@ export class RentalResolver {
     return await this.rentalService.getOwnerRentals(memberId);
   }
 
-  /** 
-   * CANCEL RENTAL
-   * Renter yoki owner rental'ni bekor qilishi mumkin
-   */
+  /** CANCEL RENTAL */
   @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async cancelRental(
@@ -91,10 +75,7 @@ export class RentalResolver {
     return await this.rentalService.cancelRental(rentalId, memberId);
   }
 
-  /** 
-   * FINISH RENTAL
-   * Faqat owner rental'ni tugatishi mumkin
-   */
+  /** FINISH RENTAL - Faqat owner */
   @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async finishRental(
@@ -110,13 +91,9 @@ export class RentalResolver {
    *    ADMIN OPERATIONS     *
    **************************/
 
-  /**
-   * GET ALL RENTALS BY ADMIN
-   * Admin barcha rental'larni pagination bilan ko'radi
-   */
+  /** GET ALL RENTALS BY ADMIN */
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
   @Query(() => Rentals)
   async getAllRentalsByAdmin(
     @Args('input') input: RentalsInquiry,
@@ -125,13 +102,9 @@ export class RentalResolver {
     return await this.rentalService.getAllRentalsByAdmin(input);
   }
 
-  /**
-   * UPDATE RENTAL BY ADMIN
-   * Admin rental statusni o'zgartirishi mumkin
-   */
+  /** UPDATE RENTAL BY ADMIN */
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async updateRentalByAdmin(
     @Args('input') input: string,
@@ -141,13 +114,9 @@ export class RentalResolver {
     return await this.rentalService.updateRentalByAdmin(rentalId);
   }
 
-  /**
-   * REMOVE RENTAL BY ADMIN
-   * Admin rental'ni o'chirishi mumkin (soft delete)
-   */
+  /** REMOVE RENTAL BY ADMIN */
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard)
   @Mutation(() => RentalBooking)
   async removeRentalByAdmin(
     @Args('rentalId') input: string,

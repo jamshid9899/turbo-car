@@ -11,16 +11,15 @@ export const availablePropertySorts = [
     'propertyViews',
     'propertyRank',
     'propertyPrice',
-]
+];
 
 export const availableBoardArticleSorts = ['createdAt', 'updatedAt', 'articleLikes', 'articleViews'];
-export const availableCommentSorts = ['createdAt', 'updatedAt']
+export const availableCommentSorts = ['createdAt', 'updatedAt'];
 
 /**  IMAGE CONFIGURATION **/
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { T } from './types/common';
-import { pipeline } from 'stream';
 
 export const validMimeTypes = ['image/png', 'image/jpg', 'image/jpeg'];
 export const getSerialForImage = (filename: string) => {
@@ -32,33 +31,40 @@ export const shapeIntoMongoObjectId = (target: any) => {
     return typeof target === 'string' ? new ObjectId(target) : target;
 };
 
-export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '$_id') => {
+// ✅ FIXED: lookupAuthMemberLiked
+export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '_id') => {
+    // ✅ IMPORTANT: Remove "$" from targetRefId, will be added in pipeline
+    const refField = targetRefId.startsWith('$') ? targetRefId.slice(1) : targetRefId;
+    
     return {
         $lookup: {
             from: 'likes',
             let: {
-                localLikeRefId: targetRefId, //search mehanizmi uchun  "_id"
+                localLikeRefId: `$${refField}`,  // ✅ Now properly references document field
                 localMemberId: memberId,
-                localMyFavorite: true,//like bosdimi yoqmi
+                localMyFavorite: true,
             },
             pipeline: [
                 {
-                    $match: { //1nechta bolsa expr keeps only doc that match the condition
+                    $match: {
                         $expr: {
-                            $and:  [{ $eq: ['$likeRefId', '$$localLikeRefId'] }, { $eq: ['$memberId', '$$localMemberId'] }],
+                            $and: [
+                                { $eq: ['$likeRefId', '$$localLikeRefId'] },
+                                { $eq: ['$memberId', '$$localMemberId'] }
+                            ],
                         },
                     },
                 },
                 {
-                    $project: { // contorl what fields  to include in the lookup's output
-                        _id: 0, //idni olib bermasin
+                    $project: {
+                        _id: 0,
                         memberId: 1,
                         likeRefId: 1,
-                        myFavorite: '$$localMyFavorite', //= localMyFavorite: true,
+                        myFavorite: '$$localMyFavorite',
                     },
                 },
             ],
-            as: 'meLiked',//qanaqa nom bilan saqlash
+            as: 'meLiked',
         },
     };
 };
@@ -68,30 +74,38 @@ interface LookupAuthMemberFollowed {
     followingId: string;
 }
 
+// ✅ FIXED: lookupAuthMemberFollowed
 export const lookupAuthMemberFollowed = (input: LookupAuthMemberFollowed) => {
     const { followerId, followingId } = input;
+    
+    // ✅ Remove "$" if present
+    const followingField = followingId.startsWith('$') ? followingId.slice(1) : followingId;
+    
     return {
         $lookup: {
             from: 'follows',
             let: {
                 localFollowerId: followerId,
-                localFollowingId: followingId,
-                localMyFavorite: true,
+                localFollowingId: `$${followingField}`,  // ✅ Proper field reference
+                localMyFollowing: true,
             },
             pipeline: [
                 {
                     $match: {
                         $expr: {
-                            $and:  [{ $eq: ['$followerId', '$$localFollowerId'] }, { $eq: ['$followingId', '$$localFollowingId'] }],
+                            $and: [
+                                { $eq: ['$followerId', '$$localFollowerId'] },
+                                { $eq: ['$followingId', '$$localFollowingId'] }
+                            ],
                         },
                     },
                 },
                 {
                     $project: {
-                        _id: 0, 
+                        _id: 0,
                         followerId: 1,
                         followingId: 1,
-                        myFollowing: '$$localMyFavorite',
+                        myFollowing: '$$localMyFollowing',
                     },
                 },
             ],
@@ -109,7 +123,6 @@ export const lookupMember = {
     },
 };
 
-
 export const lookupFollowingData = {
     $lookup: {
         from: 'members',
@@ -124,7 +137,7 @@ export const lookupFollowerData = {
         from: 'members',
         localField: 'followerId',
         foreignField: '_id',
-        as: 'followData',
+        as: 'followerData',  // ✅ FIXED: was 'followData'
     },
 };
 
@@ -136,7 +149,6 @@ export const lookupFavorite = {
         as: 'favoriteProperty.memberData',
     },
 };
-
 
 export const lookupVisit = {
     $lookup: {

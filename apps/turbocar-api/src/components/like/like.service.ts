@@ -12,11 +12,11 @@ import { OrdinaryInquiry } from '../../libs/dto/property/property.filter';
 
 @Injectable()
 export class LikeService {
-  constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) { }
+  constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) {}
 
   public async toggleLike(input: LikeInput): Promise<number> {
-    const search: T = { memberId: input.memberId, likeRefId: input.likeRefId },
-      exist = await this.likeModel.findOne(search).exec();
+    const search: T = { memberId: input.memberId, likeRefId: input.likeRefId };
+    const exist = await this.likeModel.findOne(search).exec();
     let modifier = 1;
 
     if (exist) {
@@ -34,17 +34,20 @@ export class LikeService {
     return modifier;
   }
 
+  // ✅ OPTIMIZED - Added .lean()
   public async checkLikeExistence(input: LikeInput): Promise<MeLiked[]> {
     const { memberId, likeRefId } = input;
-    const result = await this.likeModel.findOne({ memberId: memberId, likeRefId: likeRefId }).exec();
-    return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
+    const result = await this.likeModel
+      .findOne({ memberId: memberId, likeRefId: likeRefId })
+      .lean()
+      .exec();
+    
+    return result ? [{ memberId, likeRefId, myFavorite: true }] : [];
   }
 
   public async getFavoriteProperties(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
     const { page, limit } = input;
     const match: T = { likeGroup: LikeGroup.PROPERTY, memberId: memberId };
-    console.log('memberId type:', typeof memberId, memberId);
-    console.log(' match condition:', match);
 
     const data: T = await this.likeModel.aggregate([
       { $match: match },
@@ -57,27 +60,26 @@ export class LikeService {
           as: 'favoriteProperty',
         },
       },
-      { $unwind: '$favoriteProperty'},
+      { $unwind: '$favoriteProperty' },
       {
         $facet: {
           list: [
             { $skip: (page - 1) * limit },
             { $limit: limit },
-
-            lookupFavorite,//memberdatasi tashkil qilindi
+            lookupFavorite,
             { $unwind: '$favoriteProperty.memberData' },
           ],
-          metaCounter: [{ $count: 'total'}],
+          metaCounter: [{ $count: 'total' }],
         },
       },
-    ])
-    .exec();
-    console.log('data:', data)
-    const result: Properties = { list: [], totalCount: data[0].metaCounter?.length ? data[0].metaCounter[0].total : 0
-};
-    console.log('result:', result)
+    ]).exec();
+
+    const result: Properties = { 
+      list: [], 
+      totalCount: data[0]?.metaCounter?.[0]?.total ?? 0
+    };
+    
     result.list = data[0].list.map((ele) => ele.favoriteProperty);
-    console.log('result:', result)
-    return result
+    return result;
   }
 }

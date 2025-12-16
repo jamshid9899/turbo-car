@@ -18,12 +18,11 @@ import { Message } from '../../libs/enums/common.enum';
 
 @Resolver()
 export class MemberResolver {
-  constructor(private readonly memberService: MemberService) { }
+  constructor(private readonly memberService: MemberService) {}
 
-  @Mutation(() => Member) //POST ga togri keladi
+  @Mutation(() => Member)
   public async signup(@Args('input') input: MemberInput): Promise<Member> {
     console.log('Mutation: signup');
-    console.log('input:', input);
     return await this.memberService.signup(input);
   }
 
@@ -34,10 +33,9 @@ export class MemberResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Query(() => String) //GET
+  @Query(() => String)
   public async checkAuth(@AuthMember('memberNick') memberNick: string): Promise<string> {
     console.log('Query: checkAuth');
-    console.log('memberNick:', memberNick);
     return `Hi ${memberNick}`;
   }
 
@@ -46,7 +44,7 @@ export class MemberResolver {
   @Query(() => String)
   public async chechAuthRoles(@AuthMember() authMember: Member): Promise<string> {
     console.log('Query: chechAuthRoles');
-    return `Hi ${authMember.memberNick} you are ${authMember.memberType} (memberId: ${authMember._id})`;
+    return `Hi ${authMember.memberNick} you are ${authMember.memberType}`;
   }
 
   @UseGuards(AuthGuard)
@@ -62,7 +60,10 @@ export class MemberResolver {
 
   @UseGuards(WithoutGuard)
   @Query(() => Member)
-  public async getMember(@Args('memberId') input: string, @AuthMember('_id') memberId: ObjectId): Promise<Member> {
+  public async getMember(
+    @Args('memberId') input: string, 
+    @AuthMember('_id') memberId: ObjectId
+  ): Promise<Member> {
     console.log('Query: getMember');
     const targetId = shapeIntoMongoObjectId(input);
     return await this.memberService.getMember(memberId, targetId);
@@ -70,27 +71,26 @@ export class MemberResolver {
 
   @UseGuards(WithoutGuard)
   @Query(() => Members)
-  public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
+  public async getAgents(
+    @Args('input') input: AgentsInquiry, 
+    @AuthMember('_id') memberId: ObjectId
+  ): Promise<Members> {
     console.log('Query: getAgents');
     return await this.memberService.getAgents(memberId, input);
   }
 
-  /**LIKES */
   @UseGuards(AuthGuard)
   @Mutation(() => Member)
   public async likeTargetMember(
-    @Args('memberId') input: string, //=> a person who are being liked from others
-    @AuthMember('_id') memberId: ObjectId, //=> aperson who like other
+    @Args('memberId') input: string,
+    @AuthMember('_id') memberId: ObjectId,
   ): Promise<Member> {
     console.log('Mutation: likeTargetMember');
     const likeRefId = shapeIntoMongoObjectId(input);
     return await this.memberService.likeTargetMember(memberId, likeRefId);
   }
 
-
-  // /** ADMIN **/
-
-  //Authorization: ADMIN
+  /** ADMIN **/
   @Roles(MemberType.ADMIN)
   @UseGuards(RolesGuard)
   @Query(() => Members)
@@ -104,11 +104,10 @@ export class MemberResolver {
   @Mutation(() => Member)
   public async updateMemberByAdmin(@Args('input') input: MemberUpdate): Promise<Member> {
     console.log('Mutation: updateMemberByAdmin');
-    return await this.memberService.updateMemberByAdmin(input); //CALL
+    return await this.memberService.updateMemberByAdmin(input);
   }
 
   /** UPLOADER **/
-
   @UseGuards(AuthGuard)
   @Mutation((returns) => String)
   public async imageUploader(
@@ -127,10 +126,9 @@ export class MemberResolver {
     const stream = createReadStream();
 
     const result = await new Promise((resolve, reject) => {
-      //ketma ketlik
       stream
-        .pipe(createWriteStream(url)) //file upload qilib beradi uploads folderimizga chunk by chunk (write the incoming stream to disk)
-        .on('finish', async () => resolve(true)) //success
+        .pipe(createWriteStream(url))
+        .on('finish', async () => resolve(true))
         .on('error', () => reject(false));
     });
     if (!result) throw new Error(Message.UPLOAD_FAILED);
@@ -161,7 +159,7 @@ export class MemberResolver {
 
         const result = await new Promise((resolve, reject) => {
           stream
-            .pipe(createWriteStream(url)) // tells Npde.js exactly where on the disk to save the file.
+            .pipe(createWriteStream(url))
             .on('finish', () => resolve(true))
             .on('error', () => reject(false));
         });
