@@ -151,54 +151,76 @@ export class PropertyService {
   }
 
   // ✅ Parameter name changed: filter → search
-  private shapeMatchQuery(match: T, search: PropertySearchFilter): void {
-    if (!search) return;
+ private shapeMatchQuery(match: T, search: PropertySearchFilter): void {
+  if (!search) return;
 
-    const {
-      locationList,
-      typeList,
-      conditionList,
-      fuelTypeList,
-      transmissionList,
-      featuresList,
-      brandList,
-      cylindersList,
-      colorList,
-      minPrice,
-      maxPrice,
-      minMileage,
-      maxMileage,
-      minYear,
-      maxYear,
-      isForSale,
-      isForRent,
-      text,
-    } = search;
+  const {
+    memberId,          // 🔴
+    locationList,
+    typeList,
+    conditionList,
+    fuelTypeList,
+    transmissionList,
+    featuresList,
+    brandList,
+    cylindersList,
+    colorList,
+    minPrice,
+    maxPrice,
+    minMileage,
+    maxMileage,
+    minYear,
+    maxYear,
+    isForSale,
+    isForRent,
+    rentStartDate,     // 🔴 YANGI
+    text,
+  } = search;
 
-    if (locationList?.length) match.propertyLocation = { $in: locationList };
-    if (typeList?.length) match.propertyType = { $in: typeList };
-    if (conditionList?.length) match.propertyCondition = { $in: conditionList };
-    if (fuelTypeList?.length) match.propertyFuelType = { $in: fuelTypeList };
-    if (transmissionList?.length) match.propertyTransmission = { $in: transmissionList };
-    if (featuresList?.length) match.propertyFeatures = { $in: featuresList };
-    if (brandList?.length) match.propertyBrand = { $in: brandList };
-    if (cylindersList?.length) match.propertyCylinders = { $in: cylindersList };
-    if (colorList?.length) match.propertyColor = { $in: colorList };
-
-    if (minPrice != null || maxPrice != null)
-      match.propertyPrice = { $gte: minPrice ?? 0, $lte: maxPrice ?? 999999999 };
-
-    if (minMileage != null || maxMileage != null)
-      match.propertyMileage = { $gte: minMileage ?? 0, $lte: maxMileage ?? 999999999 };
-
-    if (minYear != null || maxYear != null)
-      match.propertyYear = { $gte: minYear ?? 1900, $lte: maxYear ?? 2100 };
-
-    if (isForSale !== undefined) match.isForSale = isForSale;
-    if (isForRent !== undefined) match.isForRent = isForRent;
-
-    if (text) match.propertyTitle = { $regex: new RegExp(text, 'i') };
+  // 🔴 MEMBER FILTER (agent / owner properties)
+  if (memberId) {
+    match.memberId = shapeIntoMongoObjectId(memberId);
   }
+
+  if (locationList?.length) match.propertyLocation = { $in: locationList };
+  if (typeList?.length) match.propertyType = { $in: typeList };
+  if (conditionList?.length) match.propertyCondition = { $in: conditionList };
+  if (fuelTypeList?.length) match.propertyFuelType = { $in: fuelTypeList };
+  if (transmissionList?.length) match.propertyTransmission = { $in: transmissionList };
+  if (featuresList?.length) match.propertyFeatures = { $in: featuresList };
+  if (brandList?.length) match.propertyBrand = { $in: brandList };
+  if (cylindersList?.length) match.propertyCylinders = { $in: cylindersList };
+  if (colorList?.length) match.propertyColor = { $in: colorList };
+
+  if (minPrice != null || maxPrice != null)
+    match.propertyPrice = { $gte: minPrice ?? 0, $lte: maxPrice ?? 999999999 };
+
+  if (minMileage != null || maxMileage != null)
+    match.propertyMileage = { $gte: minMileage ?? 0, $lte: maxMileage ?? 999999999 };
+
+  if (minYear != null || maxYear != null)
+    match.propertyYear = { $gte: minYear ?? 1900, $lte: maxYear ?? 2100 };
+
+  if (isForSale !== undefined) match.isForSale = isForSale;
+
+  // 🔥 RENT FILTER (ENG MUHIM QISM)
+  if (isForRent === true) {
+    match.isForRent = true;
+
+    if (rentStartDate) {
+      match.$or = [
+        { rentedUntil: null },
+        { rentedUntil: { $lte: new Date(rentStartDate) } }
+      ];
+    }
+  }
+
+  if (text) {
+    match.propertyTitle = { $regex: new RegExp(text, 'i') };
+  }
+}
+
+
 
   /** FAVORITES */
   public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {

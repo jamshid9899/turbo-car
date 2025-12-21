@@ -25,6 +25,14 @@ import { availablePropertySorts } from '../../config';
 @InputType()
 export class PropertySearchFilter {
   @IsOptional()
+  @Field(() => String, { nullable: true })
+  memberId?: ObjectId;
+  
+   @IsOptional()
+  @Field(() => Date, { nullable: true })
+  rentStartDate?: Date;
+
+  @IsOptional()
   @Field(() => [PropertyLocation], { nullable: true })
   locationList?: PropertyLocation[];
 
