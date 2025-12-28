@@ -5,12 +5,12 @@ export const availableMemberSorts = ['createdAt', 'updatedAt', 'memberLikes', 'm
 
 export const availableOptions = ['propertyBarter', 'propertyRent'];
 export const availablePropertySorts = [
-    'createdAt',
-    'updatedAt',
-    'propertyLikes',
-    'propertyViews',
-    'propertyRank',
-    'propertyPrice',
+	'createdAt',
+	'updatedAt',
+	'propertyLikes',
+	'propertyViews',
+	'propertyRank',
+	'propertyPrice',
 ];
 
 export const availableBoardArticleSorts = ['createdAt', 'updatedAt', 'articleLikes', 'articleViews'];
@@ -23,138 +23,132 @@ import { T } from './types/common';
 
 export const validMimeTypes = ['image/png', 'image/jpg', 'image/jpeg'];
 export const getSerialForImage = (filename: string) => {
-    const ext = path.parse(filename).ext;
-    return uuidv4() + ext;
+	const ext = path.parse(filename).ext;
+	return uuidv4() + ext;
 };
 
 export const shapeIntoMongoObjectId = (target: any) => {
-    return typeof target === 'string' ? new ObjectId(target) : target;
+	return typeof target === 'string' ? new ObjectId(target) : target;
 };
 
 // ✅ FIXED: lookupAuthMemberLiked
 export const lookupAuthMemberLiked = (memberId: T, targetRefId: string = '_id') => {
-    // ✅ IMPORTANT: Remove "$" from targetRefId, will be added in pipeline
-    const refField = targetRefId.startsWith('$') ? targetRefId.slice(1) : targetRefId;
-    
-    return {
-        $lookup: {
-            from: 'likes',
-            let: {
-                localLikeRefId: `$${refField}`,  // ✅ Now properly references document field
-                localMemberId: memberId,
-                localMyFavorite: true,
-            },
-            pipeline: [
-                {
-                    $match: {
-                        $expr: {
-                            $and: [
-                                { $eq: ['$likeRefId', '$$localLikeRefId'] },
-                                { $eq: ['$memberId', '$$localMemberId'] }
-                            ],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        memberId: 1,
-                        likeRefId: 1,
-                        myFavorite: '$$localMyFavorite',
-                    },
-                },
-            ],
-            as: 'meLiked',
-        },
-    };
+	// ✅ IMPORTANT: Remove "$" from targetRefId, will be added in pipeline
+	const refField = targetRefId.startsWith('$') ? targetRefId.slice(1) : targetRefId;
+
+	return {
+		$lookup: {
+			from: 'likes',
+			let: {
+				localLikeRefId: `$${refField}`, // ✅ Now properly references document field
+				localMemberId: memberId,
+				localMyFavorite: true,
+			},
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [{ $eq: ['$likeRefId', '$$localLikeRefId'] }, { $eq: ['$memberId', '$$localMemberId'] }],
+						},
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						memberId: 1,
+						likeRefId: 1,
+						myFavorite: '$$localMyFavorite',
+					},
+				},
+			],
+			as: 'meLiked',
+		},
+	};
 };
 
 interface LookupAuthMemberFollowed {
-    followerId: T;
-    followingId: string;
+	followerId: T;
+	followingId: string;
 }
 
 // ✅ FIXED: lookupAuthMemberFollowed
 export const lookupAuthMemberFollowed = (input: LookupAuthMemberFollowed) => {
-    const { followerId, followingId } = input;
-    
-    // ✅ Remove "$" if present
-    const followingField = followingId.startsWith('$') ? followingId.slice(1) : followingId;
-    
-    return {
-        $lookup: {
-            from: 'follows',
-            let: {
-                localFollowerId: followerId,
-                localFollowingId: `$${followingField}`,  // ✅ Proper field reference
-                localMyFollowing: true,
-            },
-            pipeline: [
-                {
-                    $match: {
-                        $expr: {
-                            $and: [
-                                { $eq: ['$followerId', '$$localFollowerId'] },
-                                { $eq: ['$followingId', '$$localFollowingId'] }
-                            ],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        followerId: 1,
-                        followingId: 1,
-                        myFollowing: '$$localMyFollowing',
-                    },
-                },
-            ],
-            as: 'meFollowed',
-        },
-    };
+	const { followerId, followingId } = input;
+
+	// ✅ Remove "$" if present
+	const followingField = followingId.startsWith('$') ? followingId.slice(1) : followingId;
+
+	return {
+		$lookup: {
+			from: 'follows',
+			let: {
+				localFollowerId: followerId,
+				localFollowingId: `$${followingField}`, // ✅ Proper field reference
+				localMyFollowing: true,
+			},
+			pipeline: [
+				{
+					$match: {
+						$expr: {
+							$and: [{ $eq: ['$followerId', '$$localFollowerId'] }, { $eq: ['$followingId', '$$localFollowingId'] }],
+						},
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						followerId: 1,
+						followingId: 1,
+						myFollowing: '$$localMyFollowing',
+					},
+				},
+			],
+			as: 'meFollowed',
+		},
+	};
 };
 
 export const lookupMember = {
-    $lookup: {
-        from: 'members',
-        localField: 'memberId',
-        foreignField: '_id',
-        as: 'memberData',
-    },
+	$lookup: {
+		from: 'members',
+		localField: 'memberId',
+		foreignField: '_id',
+		as: 'memberData',
+	},
 };
 
 export const lookupFollowingData = {
-    $lookup: {
-        from: 'members',
-        localField: 'followingId',
-        foreignField: '_id',
-        as: 'followingData',
-    },
+	$lookup: {
+		from: 'members',
+		localField: 'followingId',
+		foreignField: '_id',
+		as: 'followingData',
+	},
 };
 
 export const lookupFollowerData = {
-    $lookup: {
-        from: 'members',
-        localField: 'followerId',
-        foreignField: '_id',
-        as: 'followerData',  // ✅ FIXED: was 'followData'
-    },
+	$lookup: {
+		from: 'members',
+		localField: 'followerId',
+		foreignField: '_id',
+		as: 'followerData', // ✅ FIXED: was 'followData'
+	},
 };
 
 export const lookupFavorite = {
-    $lookup: {
-        from: 'members',
-        localField: 'favoriteProperty.memberId',
-        foreignField: '_id',
-        as: 'favoriteProperty.memberData',
-    },
+	$lookup: {
+		from: 'members',
+		localField: 'favoriteProperty.memberId',
+		foreignField: '_id',
+		as: 'favoriteProperty.memberData',
+	},
 };
 
 export const lookupVisit = {
-    $lookup: {
-        from: 'members',
-        localField: 'visitedProperty.memberId',
-        foreignField: '_id',
-        as: 'visitedProperty.memberData',
-    },
+	$lookup: {
+		from: 'members',
+		localField: 'visitedProperty.memberId',
+		foreignField: '_id',
+		as: 'visitedProperty.memberData',
+	},
 };

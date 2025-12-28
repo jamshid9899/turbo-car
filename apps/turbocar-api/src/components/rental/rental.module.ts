@@ -8,14 +8,13 @@ import { PropertyModule } from '../property/property.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: 'RentalBooking', schema: RentalBookingSchema }]),
-    MemberModule,
-    PropertyModule,
-    AuthModule,
-  ],
-  providers: [RentalResolver, RentalService],
-  exports: [RentalService],
+	imports: [
+		MongooseModule.forFeature([{ name: 'RentalBooking', schema: RentalBookingSchema }]),
+		MemberModule,
+		PropertyModule,
+		AuthModule,
+	],
+	providers: [RentalResolver, RentalService],
+	exports: [RentalService],
 })
 export class RentalModule {}
-

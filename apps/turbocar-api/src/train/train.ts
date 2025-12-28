@@ -1,18 +1,15 @@
 //Task ZU
 function sumOfUnique(arr: number[]): number {
-  let sum: number = 0;
+	let sum: number = 0;
 
-  for (const num of arr) {
-    if (arr.indexOf(num) === arr.lastIndexOf(num)) {
-      sum += num;
-    }
-  }
-  return sum;
-
+	for (const num of arr) {
+		if (arr.indexOf(num) === arr.lastIndexOf(num)) {
+			sum += num;
+		}
+	}
+	return sum;
 }
-console.log(sumOfUnique([1,2,3,2
-  
-]))
+console.log(sumOfUnique([1, 2, 3, 2]));
 //TASK ZQ
 // function findDuplicatesAtLeastTwo(arr: number[]): number[] {
 //   const counts: Record<number, number> = {};
@@ -31,7 +28,7 @@ console.log(sumOfUnique([1,2,3,2
 //   return result;
 // }
 
-// console.log(findDuplicatesAtLeastTwo([1, 2, 3, 4, 5, 4, 3, 4])); 
+// console.log(findDuplicatesAtLeastTwo([1, 2, 3, 4, 5, 4, 3, 4]));
 
 //console.log('NestJS test file ishladi!');
 //Task ZL
@@ -47,7 +44,6 @@ console.log(sumOfUnique([1,2,3,2
 // }
 // console.log(reverseInteger(123456789));
 // console.log(reverseInteger(1911));
-
 
 //TASK ZO
 // function areParenthesesBalanced(str: string): boolean {

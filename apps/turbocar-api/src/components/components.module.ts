@@ -10,16 +10,16 @@ import { BoardArticleModule } from './board-article/board-article.module';
 import { RentalModule } from './rental/rental.module';
 
 @Module({
-  imports: [
-    MemberModule, 
-    AuthModule, 
-    PropertyModule,
-    LikeModule, 
-    ViewModule, 
-    CommentModule, 
-    FollowModule,
-     BoardArticleModule,
-     RentalModule,
-  ],
+	imports: [
+		MemberModule,
+		AuthModule,
+		PropertyModule,
+		LikeModule,
+		ViewModule,
+		CommentModule,
+		FollowModule,
+		BoardArticleModule,
+		RentalModule,
+	],
 })
 export class ComponentsModule {}

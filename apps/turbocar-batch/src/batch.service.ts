@@ -42,9 +42,7 @@ export class BatchService {
 				)
 				.exec();
 
-			this.logger.debug(
-				`✅ Rollback: ${propertyResult.modifiedCount} cars, ${memberResult.modifiedCount} agents`,
-			);
+			this.logger.debug(`✅ Rollback: ${propertyResult.modifiedCount} cars, ${memberResult.modifiedCount} agents`);
 		} catch (err) {
 			this.logger.error('❌ Batch Rollback Error:', err);
 			throw err;

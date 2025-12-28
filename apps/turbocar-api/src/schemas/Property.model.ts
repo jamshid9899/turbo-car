@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Schema } from 'mongoose';
 import {
 	PropertyLocation,
 	PropertyStatus,
@@ -10,11 +10,10 @@ import {
 	PropertyTransmission,
 	PropertyFeatures,
 	PropertyCylinders,
-} from "../libs/enums/property.enum";
+} from '../libs/enums/property.enum';
 
 const PropertySchema = new Schema(
 	{
-
 		propertyType: {
 			type: String,
 			enum: PropertyType,
@@ -51,17 +50,20 @@ const PropertySchema = new Schema(
 			required: true,
 		},
 
-		propertyRentPrice: {  // ✅ YANGI - rent uchun narx
+		propertyRentPrice: {
+			// ✅ YANGI - rent uchun narx
 			type: Number,
 			default: 0,
 		},
 
-		isForSale: {  // ✅ YANGI - sotish uchunmi?
+		isForSale: {
+			// ✅ YANGI - sotish uchunmi?
 			type: Boolean,
 			default: true,
 		},
 
-		isForRent: {  // ✅ YANGI - rent uchunmi?
+		isForRent: {
+			// ✅ YANGI - rent uchunmi?
 			type: Boolean,
 			default: false,
 		},
@@ -95,7 +97,8 @@ const PropertySchema = new Schema(
 			required: true,
 		},
 
-		propertySeats: {  // ✅ YANGI - necha o'rindiq
+		propertySeats: {
+			// ✅ YANGI - necha o'rindiq
 			type: Number,
 			required: true,
 			min: 2,
@@ -167,7 +170,8 @@ const PropertySchema = new Schema(
 			default: 1,
 		},
 
-		maximumRentDays: {  // ✅ YANGI - Maksimal rent muddati
+		maximumRentDays: {
+			// ✅ YANGI - Maksimal rent muddati
 			type: Number,
 			default: 90,
 		},
@@ -190,7 +194,17 @@ const PropertySchema = new Schema(
 		collection: 'properties',
 	},
 );
-PropertySchema.index({ propertyCondition: 1, propertyBrand: 1, propertyType: 1, propertyFuelType: 1, propertyLocation: 1, propertyTitle: 1, propertyPrice: 1 }, { unique: true });
-
+PropertySchema.index(
+	{
+		propertyCondition: 1,
+		propertyBrand: 1,
+		propertyType: 1,
+		propertyFuelType: 1,
+		propertyLocation: 1,
+		propertyTitle: 1,
+		propertyPrice: 1,
+	},
+	{ unique: true },
+);
 
 export default PropertySchema;

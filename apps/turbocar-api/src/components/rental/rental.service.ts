@@ -11,332 +11,327 @@ import { PropertyStatus } from '../../libs/enums/property.enum';
 
 @Injectable()
 export class RentalService {
-  constructor(
-    @InjectModel('RentalBooking') private rentalModel: Model<RentalBooking>,
-    private memberService: MemberService,
-    private propertyService: PropertyService,
-  ) {}
+	constructor(
+		@InjectModel('RentalBooking') private rentalModel: Model<RentalBooking>,
+		private memberService: MemberService,
+		private propertyService: PropertyService,
+	) {}
 
-  /** ✅ CREATE RENTAL BOOKING - To'liq validation */
-  async createRentalBooking(input: RentalBookingInput, renterId: ObjectId): Promise<RentalBooking> {
-    const propertyId = shapeIntoMongoObjectId(input.propertyId);
-    
-    // ✅ DATE VALIDATION
-    const now = new Date();
-    const startDate = new Date(input.startDate);
-    const endDate = new Date(input.endDate);
+	/** ✅ CREATE RENTAL BOOKING - To'liq validation */
+	async createRentalBooking(input: RentalBookingInput, renterId: ObjectId): Promise<RentalBooking> {
+		const propertyId = shapeIntoMongoObjectId(input.propertyId);
 
-    if (startDate < now) {
-      throw new BadRequestException("Start date cannot be in the past");
-    }
+		// ✅ DATE VALIDATION
+		const now = new Date();
+		const startDate = new Date(input.startDate);
+		const endDate = new Date(input.endDate);
 
-    if (endDate <= startDate) {
-      throw new BadRequestException("End date must be after start date");
-    }
+		if (startDate < now) {
+			throw new BadRequestException('Start date cannot be in the past');
+		}
 
-    // ✅ GET PROPERTY
-    const property = await this.propertyService.getProperty(renterId, propertyId);
-    if (!property) throw new BadRequestException("Property not found");
+		if (endDate <= startDate) {
+			throw new BadRequestException('End date must be after start date');
+		}
 
-    if (!property.isForRent) {
-      throw new BadRequestException("This property is not available for rent");
-    }
+		// ✅ GET PROPERTY
+		const property = await this.propertyService.getProperty(renterId, propertyId);
+		if (!property) throw new BadRequestException('Property not found');
 
-    // ✅ CHECK MIN/MAX RENT DAYS
-    const rentDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (rentDays < property.minimumRentDays) {
-      throw new BadRequestException(`Minimum rent period is ${property.minimumRentDays} days`);
-    }
+		if (!property.isForRent) {
+			throw new BadRequestException('This property is not available for rent');
+		}
 
-    if (property.maximumRentDays && rentDays > property.maximumRentDays) {
-      throw new BadRequestException(`Maximum rent period is ${property.maximumRentDays} days`);
-    }
+		// ✅ CHECK MIN/MAX RENT DAYS
+		const rentDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    // ✅ CHECK OVERLAP WITH TRANSACTION
-    const session = await this.rentalModel.db.startSession();
-    session.startTransaction();
+		if (rentDays < property.minimumRentDays) {
+			throw new BadRequestException(`Minimum rent period is ${property.minimumRentDays} days`);
+		}
 
-    try {
-      const overlapping = await this.rentalModel.findOne({
-        propertyId: propertyId,
-        rentalStatus: { $in: [RentalStatus.PENDING, RentalStatus.CONFIRMED] },
-        $or: [
-          { 
-            startDate: { $lte: endDate }, 
-            endDate: { $gte: startDate } 
-          }
-        ]
-      }).session(session);
+		if (property.maximumRentDays && rentDays > property.maximumRentDays) {
+			throw new BadRequestException(`Maximum rent period is ${property.maximumRentDays} days`);
+		}
 
-      if (overlapping) {
-        throw new BadRequestException("Property already booked for this period");
-      }
+		// ✅ CHECK OVERLAP WITH TRANSACTION
+		const session = await this.rentalModel.db.startSession();
+		session.startTransaction();
 
-      // ✅ CREATE RENTAL
-      const [rental] = await this.rentalModel.create([{
-        propertyId: propertyId,
-        renterId: renterId,
-        ownerId: property.memberId,
-        rentalType: input.rentalType,
-        startDate: startDate,
-        endDate: endDate,
-        totalPrice: input.totalPrice,
-        rentalStatus: RentalStatus.PENDING,
-      }], { session });
+		try {
+			const overlapping = await this.rentalModel
+				.findOne({
+					propertyId: propertyId,
+					rentalStatus: { $in: [RentalStatus.PENDING, RentalStatus.CONFIRMED] },
+					$or: [
+						{
+							startDate: { $lte: endDate },
+							endDate: { $gte: startDate },
+						},
+					],
+				})
+				.session(session);
 
-      await session.commitTransaction();
+			if (overlapping) {
+				throw new BadRequestException('Property already booked for this period');
+			}
 
-      // ✅ POPULATE DATA
-      const rentalObject = rental.toObject();
-      rentalObject.propertyData = property;
-      rentalObject.renterData = await this.memberService.getMember(null, renterId);
-      rentalObject.ownerData = await this.memberService.getMember(null, shapeIntoMongoObjectId(property.memberId));
+			// ✅ CREATE RENTAL
+			const [rental] = await this.rentalModel.create(
+				[
+					{
+						propertyId: propertyId,
+						renterId: renterId,
+						ownerId: property.memberId,
+						rentalType: input.rentalType,
+						startDate: startDate,
+						endDate: endDate,
+						totalPrice: input.totalPrice,
+						rentalStatus: RentalStatus.PENDING,
+					},
+				],
+				{ session },
+			);
 
-      return rentalObject;
+			await session.commitTransaction();
 
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
+			// ✅ POPULATE DATA
+			const rentalObject = rental.toObject();
+			rentalObject.propertyData = property;
+			rentalObject.renterData = await this.memberService.getMember(null, renterId);
+			rentalObject.ownerData = await this.memberService.getMember(null, shapeIntoMongoObjectId(property.memberId));
 
-  /** ✅ CONFIRM RENTAL */
-  async confirmRental(rentalId: ObjectId, ownerId: ObjectId): Promise<RentalBooking> {
-    const rental = await this.rentalModel.findOneAndUpdate(
-      {
-        _id: rentalId,
-        ownerId: ownerId,
-        rentalStatus: RentalStatus.PENDING,
-      },
-      { rentalStatus: RentalStatus.CONFIRMED },
-      { new: true, lean: true }
-    ).exec();
+			return rentalObject;
+		} catch (error) {
+			await session.abortTransaction();
+			throw error;
+		} finally {
+			session.endSession();
+		}
+	}
 
-    if (!rental) throw new BadRequestException("Rental not found or already processed");
+	/** ✅ CONFIRM RENTAL */
+	async confirmRental(rentalId: ObjectId, ownerId: ObjectId): Promise<RentalBooking> {
+		const rental = await this.rentalModel
+			.findOneAndUpdate(
+				{
+					_id: rentalId,
+					ownerId: ownerId,
+					rentalStatus: RentalStatus.PENDING,
+				},
+				{ rentalStatus: RentalStatus.CONFIRMED },
+				{ new: true, lean: true },
+			)
+			.exec();
 
-    // ✅ UPDATE PROPERTY STATUS → RENTED
-    await this.propertyService.updatePropertyByOwner(
-      shapeIntoMongoObjectId(rental.ownerId),
-      {
-        _id: shapeIntoMongoObjectId(rental.propertyId),
-        propertyStatus: PropertyStatus.RENTED,
-        rentedUntil: rental.endDate,
-      }
-    );
+		if (!rental) throw new BadRequestException('Rental not found or already processed');
 
-    return await this.populateRental(rental);
-  }
+		// ✅ UPDATE PROPERTY STATUS → RENTED
+		await this.propertyService.updatePropertyByOwner(shapeIntoMongoObjectId(rental.ownerId), {
+			_id: shapeIntoMongoObjectId(rental.propertyId),
+			propertyStatus: PropertyStatus.RENTED,
+			rentedUntil: rental.endDate,
+		});
 
-  /** ✅ GET MY RENTALS - Aggregation bilan */
-  async getMyRentals(memberId: ObjectId): Promise<RentalBooking[]> {
-    return await this.rentalModel.aggregate([
-      { $match: { renterId: memberId } },
-      { $sort: { createdAt: -1 } },
-      {
-        $lookup: {
-          from: 'properties',
-          localField: 'propertyId',
-          foreignField: '_id',
-          as: 'propertyData'
-        }
-      },
-      { $unwind: { path: '$propertyData', preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: 'members',
-          localField: 'ownerId',
-          foreignField: '_id',
-          as: 'ownerData'
-        }
-      },
-      { $unwind: { path: '$ownerData', preserveNullAndEmptyArrays: true } }
-    ]).exec();
-  }
+		return await this.populateRental(rental);
+	}
 
-  /** ✅ GET OWNER RENTALS - Aggregation bilan */
-  async getOwnerRentals(ownerId: ObjectId): Promise<RentalBooking[]> {
-    return await this.rentalModel.aggregate([
-      { $match: { ownerId: ownerId } },
-      { $sort: { createdAt: -1 } },
-      {
-        $lookup: {
-          from: 'properties',
-          localField: 'propertyId',
-          foreignField: '_id',
-          as: 'propertyData'
-        }
-      },
-      { $unwind: { path: '$propertyData', preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: 'members',
-          localField: 'renterId',
-          foreignField: '_id',
-          as: 'renterData'
-        }
-      },
-      { $unwind: { path: '$renterData', preserveNullAndEmptyArrays: true } }
-    ]).exec();
-  }
+	/** ✅ GET MY RENTALS - Aggregation bilan */
+	async getMyRentals(memberId: ObjectId): Promise<RentalBooking[]> {
+		return await this.rentalModel
+			.aggregate([
+				{ $match: { renterId: memberId } },
+				{ $sort: { createdAt: -1 } },
+				{
+					$lookup: {
+						from: 'properties',
+						localField: 'propertyId',
+						foreignField: '_id',
+						as: 'propertyData',
+					},
+				},
+				{ $unwind: { path: '$propertyData', preserveNullAndEmptyArrays: true } },
+				{
+					$lookup: {
+						from: 'members',
+						localField: 'ownerId',
+						foreignField: '_id',
+						as: 'ownerData',
+					},
+				},
+				{ $unwind: { path: '$ownerData', preserveNullAndEmptyArrays: true } },
+			])
+			.exec();
+	}
 
-  /** ✅ CANCEL RENTAL */
-  async cancelRental(rentalId: ObjectId, memberId: ObjectId): Promise<RentalBooking> {
-    const existingRental = await this.rentalModel.findOne({
-      _id: rentalId,
-      $or: [{ renterId: memberId }, { ownerId: memberId }],
-      rentalStatus: { $in: [RentalStatus.PENDING, RentalStatus.CONFIRMED] },
-    }).lean().exec();
+	/** ✅ GET OWNER RENTALS - Aggregation bilan */
+	async getOwnerRentals(ownerId: ObjectId): Promise<RentalBooking[]> {
+		return await this.rentalModel
+			.aggregate([
+				{ $match: { ownerId: ownerId } },
+				{ $sort: { createdAt: -1 } },
+				{
+					$lookup: {
+						from: 'properties',
+						localField: 'propertyId',
+						foreignField: '_id',
+						as: 'propertyData',
+					},
+				},
+				{ $unwind: { path: '$propertyData', preserveNullAndEmptyArrays: true } },
+				{
+					$lookup: {
+						from: 'members',
+						localField: 'renterId',
+						foreignField: '_id',
+						as: 'renterData',
+					},
+				},
+				{ $unwind: { path: '$renterData', preserveNullAndEmptyArrays: true } },
+			])
+			.exec();
+	}
 
-    if (!existingRental) {
-      throw new BadRequestException("Rental not found or cannot be cancelled");
-    }
+	/** ✅ CANCEL RENTAL */
+	async cancelRental(rentalId: ObjectId, memberId: ObjectId): Promise<RentalBooking> {
+		const existingRental = await this.rentalModel
+			.findOne({
+				_id: rentalId,
+				$or: [{ renterId: memberId }, { ownerId: memberId }],
+				rentalStatus: { $in: [RentalStatus.PENDING, RentalStatus.CONFIRMED] },
+			})
+			.lean()
+			.exec();
 
-    const wasConfirmed = existingRental.rentalStatus === RentalStatus.CONFIRMED;
+		if (!existingRental) {
+			throw new BadRequestException('Rental not found or cannot be cancelled');
+		}
 
-    const rental = await this.rentalModel.findByIdAndUpdate(
-      rentalId,
-      { rentalStatus: RentalStatus.CANCELLED },
-      { new: true, lean: true }
-    ).exec();
+		const wasConfirmed = existingRental.rentalStatus === RentalStatus.CONFIRMED;
 
-    if (wasConfirmed) {
-      await this.propertyService.updatePropertyByOwner(
-        shapeIntoMongoObjectId(rental.ownerId),
-        {
-          _id: shapeIntoMongoObjectId(rental.propertyId),
-          propertyStatus: PropertyStatus.ACTIVE,
-          rentedUntil: null,
-        }
-      );
-    }
+		const rental = await this.rentalModel
+			.findByIdAndUpdate(rentalId, { rentalStatus: RentalStatus.CANCELLED }, { new: true, lean: true })
+			.exec();
 
-    return await this.populateRental(rental);
-  }
+		if (wasConfirmed) {
+			await this.propertyService.updatePropertyByOwner(shapeIntoMongoObjectId(rental.ownerId), {
+				_id: shapeIntoMongoObjectId(rental.propertyId),
+				propertyStatus: PropertyStatus.ACTIVE,
+				rentedUntil: null,
+			});
+		}
 
-  /** ✅ FINISH RENTAL */
-  async finishRental(rentalId: ObjectId, ownerId: ObjectId): Promise<RentalBooking> {
-    const rental = await this.rentalModel.findOneAndUpdate(
-      {
-        _id: rentalId,
-        ownerId: ownerId,
-        rentalStatus: RentalStatus.CONFIRMED,
-      },
-      { rentalStatus: RentalStatus.FINISHED },
-      { new: true, lean: true }
-    ).exec();
+		return await this.populateRental(rental);
+	}
 
-    if (!rental) throw new BadRequestException("Rental not found or not confirmed");
+	/** ✅ FINISH RENTAL */
+	async finishRental(rentalId: ObjectId, ownerId: ObjectId): Promise<RentalBooking> {
+		const rental = await this.rentalModel
+			.findOneAndUpdate(
+				{
+					_id: rentalId,
+					ownerId: ownerId,
+					rentalStatus: RentalStatus.CONFIRMED,
+				},
+				{ rentalStatus: RentalStatus.FINISHED },
+				{ new: true, lean: true },
+			)
+			.exec();
 
-    await this.propertyService.updatePropertyByOwner(
-      shapeIntoMongoObjectId(rental.ownerId),
-      {
-        _id: shapeIntoMongoObjectId(rental.propertyId),
-        propertyStatus: PropertyStatus.ACTIVE,
-        rentedUntil: null,
-      }
-    );
+		if (!rental) throw new BadRequestException('Rental not found or not confirmed');
 
-    return await this.populateRental(rental);
-  }
+		await this.propertyService.updatePropertyByOwner(shapeIntoMongoObjectId(rental.ownerId), {
+			_id: shapeIntoMongoObjectId(rental.propertyId),
+			propertyStatus: PropertyStatus.ACTIVE,
+			rentedUntil: null,
+		});
 
-  /** ************************
-   *    ADMIN OPERATIONS     *
-   **************************/
+		return await this.populateRental(rental);
+	}
 
-  /** ✅ GET ALL RENTALS BY ADMIN */
-  async getAllRentalsByAdmin(input: RentalsInquiry): Promise<Rentals> {
-    const { page = 1, limit = 20, sort = 'createdAt', direction = 'DESC' } = input.search;
-    
-    const match: any = {};
-    const sortOption: any = {};
-    sortOption[sort] = direction === 'DESC' ? -1 : 1;
+	/** ************************
+	 *    ADMIN OPERATIONS     *
+	 **************************/
 
-    const result = await this.rentalModel.aggregate([
-      { $match: match },
-      { $sort: sortOption },
-      {
-        $facet: {
-          list: [
-            { $skip: (page - 1) * limit },
-            { $limit: limit },
-            {
-              $lookup: {
-                from: 'properties',
-                localField: 'propertyId',
-                foreignField: '_id',
-                as: 'propertyData'
-              }
-            },
-            { $unwind: { path: '$propertyData', preserveNullAndEmptyArrays: true } },
-            {
-              $lookup: {
-                from: 'members',
-                localField: 'renterId',
-                foreignField: '_id',
-                as: 'renterData'
-              }
-            },
-            { $unwind: { path: '$renterData', preserveNullAndEmptyArrays: true } },
-            {
-              $lookup: {
-                from: 'members',
-                localField: 'ownerId',
-                foreignField: '_id',
-                as: 'ownerData'
-              }
-            },
-            { $unwind: { path: '$ownerData', preserveNullAndEmptyArrays: true } }
-          ],
-          metaCounter: [{ $count: 'total' }]
-        }
-      }
-    ]);
+	/** ✅ GET ALL RENTALS BY ADMIN */
+	async getAllRentalsByAdmin(input: RentalsInquiry): Promise<Rentals> {
+		const { page = 1, limit = 20, sort = 'createdAt', direction = 'DESC' } = input.search;
 
-    return {
-      list: result[0].list,
-      metaCounter: result[0].metaCounter[0] || { total: 0 },
-    };
-  }
+		const match: any = {};
+		const sortOption: any = {};
+		sortOption[sort] = direction === 'DESC' ? -1 : 1;
 
-  /** ✅ UPDATE RENTAL BY ADMIN */
-  async updateRentalByAdmin(rentalId: ObjectId): Promise<RentalBooking> {
-    const rental = await this.rentalModel.findByIdAndUpdate(
-      rentalId,
-      { rentalStatus: RentalStatus.CANCELLED },
-      { new: true, lean: true }
-    ).exec();
+		const result = await this.rentalModel.aggregate([
+			{ $match: match },
+			{ $sort: sortOption },
+			{
+				$facet: {
+					list: [
+						{ $skip: (page - 1) * limit },
+						{ $limit: limit },
+						{
+							$lookup: {
+								from: 'properties',
+								localField: 'propertyId',
+								foreignField: '_id',
+								as: 'propertyData',
+							},
+						},
+						{ $unwind: { path: '$propertyData', preserveNullAndEmptyArrays: true } },
+						{
+							$lookup: {
+								from: 'members',
+								localField: 'renterId',
+								foreignField: '_id',
+								as: 'renterData',
+							},
+						},
+						{ $unwind: { path: '$renterData', preserveNullAndEmptyArrays: true } },
+						{
+							$lookup: {
+								from: 'members',
+								localField: 'ownerId',
+								foreignField: '_id',
+								as: 'ownerData',
+							},
+						},
+						{ $unwind: { path: '$ownerData', preserveNullAndEmptyArrays: true } },
+					],
+					metaCounter: [{ $count: 'total' }],
+				},
+			},
+		]);
 
-    if (!rental) throw new BadRequestException("Rental not found");
+		return {
+			list: result[0].list,
+			metaCounter: result[0].metaCounter[0] || { total: 0 },
+		};
+	}
 
-    return await this.populateRental(rental);
-  }
+	/** ✅ UPDATE RENTAL BY ADMIN */
+	async updateRentalByAdmin(rentalId: ObjectId): Promise<RentalBooking> {
+		const rental = await this.rentalModel
+			.findByIdAndUpdate(rentalId, { rentalStatus: RentalStatus.CANCELLED }, { new: true, lean: true })
+			.exec();
 
-  /** ✅ REMOVE RENTAL BY ADMIN */
-  async removeRentalByAdmin(rentalId: ObjectId): Promise<RentalBooking> {
-    const rental = await this.rentalModel.findByIdAndDelete(rentalId).lean().exec();
+		if (!rental) throw new BadRequestException('Rental not found');
 
-    if (!rental) throw new BadRequestException("Rental not found");
+		return await this.populateRental(rental);
+	}
 
-    return await this.populateRental(rental);
-  }
+	/** ✅ REMOVE RENTAL BY ADMIN */
+	async removeRentalByAdmin(rentalId: ObjectId): Promise<RentalBooking> {
+		const rental = await this.rentalModel.findByIdAndDelete(rentalId).lean().exec();
 
-  /** ✅ HELPER - Manual populate */
-  private async populateRental(rental: any): Promise<RentalBooking> {
-    rental.propertyData = await this.propertyService.getProperty(
-      null,
-      shapeIntoMongoObjectId(rental.propertyId)
-    );
-    rental.renterData = await this.memberService.getMember(
-      null,
-      shapeIntoMongoObjectId(rental.renterId)
-    );
-    rental.ownerData = await this.memberService.getMember(
-      null,
-      shapeIntoMongoObjectId(rental.ownerId)
-    );
-    return rental;
-  }
+		if (!rental) throw new BadRequestException('Rental not found');
+
+		return await this.populateRental(rental);
+	}
+
+	/** ✅ HELPER - Manual populate */
+	private async populateRental(rental: any): Promise<RentalBooking> {
+		rental.propertyData = await this.propertyService.getProperty(null, shapeIntoMongoObjectId(rental.propertyId));
+		rental.renterData = await this.memberService.getMember(null, shapeIntoMongoObjectId(rental.renterId));
+		rental.ownerData = await this.memberService.getMember(null, shapeIntoMongoObjectId(rental.ownerId));
+		return rental;
+	}
 }
