@@ -7,7 +7,6 @@ import { ApolloDriver } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
 import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
-import { error } from 'console';
 import { T } from './libs/types/common';
 import { SocketModule } from './socket/socket.module';
 
@@ -18,6 +17,7 @@ import { SocketModule } from './socket/socket.module';
 			// for integration graphql api
 			driver: ApolloDriver,
 			playground: true,
+			introspection: true,
 			uploads: true,
 			autoSchemaFile: true,
 			formatError: (error: T) => {
