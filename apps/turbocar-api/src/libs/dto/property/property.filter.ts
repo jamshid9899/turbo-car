@@ -68,19 +68,19 @@ export class PropertySearchFilter {
 	colorList?: PropertyColor[];
 
 	@IsOptional()
-	@Field(() => Int, { nullable: true })
+	@Field(() => Number, { nullable: true })
 	minPrice?: number;
 
 	@IsOptional()
-	@Field(() => Int, { nullable: true })
+	@Field(() => Number, { nullable: true })
 	maxPrice?: number;
 
 	@IsOptional()
-	@Field(() => Int, { nullable: true })
+	@Field(() => Number, { nullable: true })
 	minMileage?: number;
 
 	@IsOptional()
-	@Field(() => Int, { nullable: true })
+	@Field(() => Number, { nullable: true })
 	maxMileage?: number;
 
 	@IsOptional()

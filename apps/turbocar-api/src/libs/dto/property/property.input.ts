@@ -1,6 +1,6 @@
 // property.input.ts
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsNotEmpty, IsInt, Min, Length, IsBoolean, IsOptional, IsEnum, IsArray, ArrayNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsInt, Min, Length, IsBoolean, IsOptional, IsArray, ArrayNotEmpty } from 'class-validator';
 import type { ObjectId } from 'mongoose';
 import {
 	PropertyCondition,
