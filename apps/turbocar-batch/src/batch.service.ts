@@ -51,7 +51,7 @@ export class BatchService {
 
 	/**
 	 * BATCH TOP PROPERTIES (CARS) - Calculate car rankings
-	 * Formula: rank = (likes × 2) + (views × 1) + (comments × 1.5)
+	 * Formula: rank = (likes × 2) + (views × 1) + (comments × 2)
 	 * Higher rank = more popular car
 	 */
 	public async batchTopProperties(): Promise<void> {
@@ -72,7 +72,7 @@ export class BatchService {
 				const { _id, propertyLikes, propertyViews, propertyComments } = car;
 
 				// TurboCar ranking formula for cars
-				const rank = propertyLikes * 2 + propertyViews * 1 + (propertyComments || 0) * 1.5;
+				const rank = propertyLikes * 2 + propertyViews * 1 + (propertyComments || 0) * 2;
 
 				return await this.propertyModel.findByIdAndUpdate(_id, { propertyRank: rank });
 			});
@@ -88,7 +88,7 @@ export class BatchService {
 
 	/**
 	 * BATCH TOP AGENTS (DEALERS) - Calculate dealer rankings
-	 * Formula: rank = (cars × 5) + (articles × 3) + (likes × 2) + (views × 1) + (followers × 1.5)
+	 * Formula: rank = (cars × 5) + (articles × 3) + (likes × 2) + (views × 1) + (followers × 2)
 	 * Higher rank = more successful dealer
 	 */
 	public async batchTopAgents(): Promise<void> {
@@ -115,7 +115,7 @@ export class BatchService {
 					(memberArticles || 0) * 3 +
 					memberLikes * 2 +
 					memberViews * 1 +
-					(memberFollowers || 0) * 1.5;
+					(memberFollowers || 0) * 2;
 
 				return await this.memberModel.findByIdAndUpdate(_id, { memberRank: rank });
 			});

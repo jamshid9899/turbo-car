@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, Float, ObjectType } from '@nestjs/graphql';
 import type { ObjectId } from 'mongoose';
 import { MemberAuthType, MemberStatus, MemberType } from '../../enums/member.enum';
 import { MeLiked } from '../like/like';
@@ -61,7 +61,7 @@ export class Member {
 	@Field(() => Int)
 	memberViews: number;
 
-	@Field(() => Int)
+	@Field(() => Float)
 	memberRank: number;
 
 	@Field(() => Int)

@@ -1,5 +1,5 @@
 // property.dto.ts
-import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, Float, ObjectType } from '@nestjs/graphql';
 import type { ObjectId } from 'mongoose';
 import {
 	PropertyCondition,
@@ -57,10 +57,10 @@ export class Property {
 	@Field(() => String)
 	propertyTitle: string;
 
-	@Field(() => Float)
+	@Field(() => Number)
 	propertyPrice: number;
 
-	@Field(() => Float)
+	@Field(() => Number)
 	propertyMileage: number;
 
 	@Field(() => Int)
@@ -72,7 +72,7 @@ export class Property {
 	@Field(() => Int)
 	propertyComments: number;
 
-	@Field(() => Int)
+	@Field(() => Float)
 	propertyRank: number;
 
 	@Field(() => [String])
@@ -81,7 +81,7 @@ export class Property {
 	@Field(() => String, { nullable: true })
 	propertyDesc?: string;
 
-	@Field(() => Float, { nullable: true })
+	@Field(() => Number, { nullable: true })
 	propertyRentPrice?: number;
 
 	@Field(() => Int)
